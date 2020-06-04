@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchAndStore, setPiece } from '../reducers/game'
 
 const Board = styled.div`
   display: grid;
@@ -28,28 +30,31 @@ const PieceImage = styled.img`
 // `
 
 export const SetGame = () => {
-  const [squares, setSquares] = useState()
-  const baseImageUrl = '/Users/williamjensen/Desktop/technigo/final-project-frontend/chess-app/src/assets/'
+  const dispatch = useDispatch()
+  const squares = useSelector((store) => store.game.squares)
+  const activePiece = useSelector((store) => store.game.activePiece)
 
   useEffect(() => {
-    fetch('http://localhost:8080/squares')
-      .then((res) => res.json())
-      .then((json) => {
-        setSquares(json.sort((a, b) => (a.row > b.row) ? 1 :
-          (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1))
-      })
-  }, [])
+    dispatch(fetchAndStore())
+  }, [dispatch])
 
+  const movePiece = (baseSquare, targetSquare) => {
+    dispatch(
+      setPiece(baseSquare, targetSquare)
+    )
 
+  }
 
   return (
     <>
       {squares &&
         <Board>
           {squares.map((square, index) => {
-            const imageUrl = square.piece ? require(`../assets/${square.piece.image}`) : ''
-            return <Square key={index} index={index} row={square.row}
-              valid={square.valid}>{square.piece && <PieceImage src={imageUrl} />}</Square>
+            const imageUrl = square === activePiece ? require(`../assets/active-${square.piece.image}`) :
+              square.piece ? require(`../assets/${square.piece.image}`) : ''
+            return <Square key={square._id} index={index} row={square.row}
+              valid={square.valid}
+              onClick={() => movePiece(square, square)}>{square.piece && <PieceImage src={imageUrl} />}</Square>
           })}
         </Board>}
       {!squares && < h1 > Loading..</h1>}
