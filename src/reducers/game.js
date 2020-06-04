@@ -14,6 +14,7 @@ export const game = createSlice({
         storeSquares: (state, action) => {
             const { squares } = action.payload
             state.squares = squares
+            state.activePiece = false
         },
 
         moveCalculator: (state, action) => {
@@ -31,7 +32,7 @@ export const game = createSlice({
 
 export const fetchAndStore = () => {
     return (dispatch) => {
-        fetch('http://localhost:8080/squares')
+        fetch('https://william-chess-board.herokuapp.com/squares')
             .then((res) => res.json())
             .then((json) => {
                 dispatch(
@@ -49,13 +50,13 @@ export const setPiece = (baseSquare, targetSquare) => {
         const state = getState()
         if (state.game.activePiece === false && baseSquare.piece) {
             dispatch(game.actions.moveCalculator({ baseSquare, targetSquare }))
-        } else if (state.game.activePiece && targetSquare === baseSquare) {
+        } else if (state.game.activePiece && state.game.activePiece === targetSquare) {
             dispatch(game.actions.resetPiece())
         } else if (state.game.activePiece) {
-            fetch('http://localhost:8080/movePiece', {
+            fetch('https://william-chess-board.herokuapp.com/movepiece', {
                 method: 'POST',
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ baseSquare, targetSquare })
+                body: JSON.stringify({ baseSquare: state.game.activePiece, targetSquare })
             })
                 .then((res) => res.json())
                 .then((json) => {
