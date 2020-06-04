@@ -159,6 +159,86 @@ export const game = createSlice({
                     }
                 })
 
+            } else if (baseSquare.piece.type.includes('knight')) {
+                const knightMoves = [
+                    { x: 2, y: 1 },
+                    { x: -2, y: 1 },
+                    { x: 2, y: -1 },
+                    { x: -2, y: -1 },
+                    { x: 1, y: 2 },
+                    { x: 1, y: -2 },
+                    { x: -1, y: 2 },
+                    { x: -1, y: -2 }
+                ]
+
+                knightMoves.forEach((dir) => {
+                    let scale = 1;
+                    for (scale = 1; scale <= 1; scale++) {
+                        const offset = { x: dir.x * scale, y: dir.y * scale }
+                        state.squares.forEach((square) => {
+                            if (baseSquare._id === square._id) {
+                                square.valid = true;
+                            } else if ((square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y) &&
+                                (!square.piece || square.piece.color !== baseSquare.piece.color)) {
+                                square.valid = true;
+                                scale = 9;
+                            }
+                        })
+                    }
+                })
+            } else if (baseSquare.piece.type.includes('queen')) {
+
+                const queenMoves = [
+                    { x: 0, y: 1, type: "straight" },
+                    { x: 0, y: -1, type: "straight" },
+                    { x: 1, y: 0, type: "straight" },
+                    { x: -1, y: 0, type: "straight" },
+                    { x: 1, y: 1, type: "diagonal" },
+                    { x: 1, y: -1, type: "diagonal" },
+                    { x: -1, y: 1, type: "diagonal" },
+                    { x: -1, y: -1, type: "diagonal" }
+                ]
+                queenMoves.forEach((dir) => {
+                    let scale = 1;
+                    for (scale = 1; scale <= 8; scale++) {
+                        const offset = { x: dir.x * scale, y: dir.y * scale }
+                        if (dir.type === "straight") {
+                            state.squares.forEach((square) => {
+                                if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x) ||
+                                    (square.row === baseSquare.row && square.column === baseSquare.column + offset.y)) {
+                                    if (square.piece && square.piece.color !== baseSquare.piece.color) {
+                                        square.valid = true;
+                                        scale = 9;
+                                    } else if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x && !square.piece) ||
+                                        (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && !square.piece) ||
+                                        (baseSquare._id === square._id)) {
+                                        square.valid = true;
+                                    } else {
+                                        square.valid = false;
+                                        scale = 9;
+                                    }
+                                }
+                            })
+                        } else {
+                            state.squares.forEach((square) => {
+                                if ((baseSquare._id === square._id) ||
+                                    (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y)) {
+                                    if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && square.piece.color !== baseSquare.piece.color) {
+                                        square.valid = true;
+                                        scale = 9;
+                                    } else if ((square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && !square.piece) ||
+                                        baseSquare._id === square._id) {
+                                        square.valid = true;
+                                    } else {
+                                        square.valid = false;
+                                        scale = 9;
+                                    }
+                                }
+                            })
+                        }
+                    }
+
+                })
             }
         },
 
