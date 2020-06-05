@@ -23,7 +23,7 @@ export const game = createSlice({
 
         storeSquares: (state, action) => {
             const { squares } = action.payload
-            state.squares = squares
+            state.squares = state.user.color === "white" ? squares.reverse() : squares
             state.activePiece = false
             state.errorMessage = false
         },
@@ -351,18 +351,20 @@ export const fetchAndStore = (roomid) => {
                 if (json.message) {
                     dispatch(game.actions.errorHandler({ error: json.message }))
                 } else {
-                    dispatch(
-                        game.actions.storeSquares({
-                            squares: json.gameBoard.sort((a, b) => (a.row > b.row) ? 1 :
-                                (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
-                        })
-                    )
+
                     dispatch(
                         game.actions.storeUser({
                             username: json.username, accessToken: state.game.user.accessToken,
                             userId: state.game.user.userId, color: json.color
                         })
                     )
+                    dispatch(
+                        game.actions.storeSquares({
+                            squares: json.gameBoard.sort((a, b) => (a.row > b.row) ? 1 :
+                                (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
+                        })
+                    )
+
                     dispatch(
                         game.actions.setHost({
                             host: json.host
