@@ -1,9 +1,19 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+
 const initialState = {
     squares: [
     ],
-    activePiece: false
+    user: {
+        username: false,
+        userId: false,
+        accessToken: false,
+        color: null
+    },
+    activePiece: false,
+    currentTurn: "white",
+    host: false,
+    errorMessage: false
 }
 
 export const game = createSlice({
@@ -15,6 +25,12 @@ export const game = createSlice({
             const { squares } = action.payload
             state.squares = squares
             state.activePiece = false
+            state.errorMessage = false
+        },
+
+        newTurn: (state, action) => {
+            const { currentTurn } = action.payload
+            state.currentTurn = currentTurn
         },
 
         moveCalculator: (state, action) => {
@@ -299,28 +315,67 @@ export const game = createSlice({
             state.squares.forEach((square) => {
                 square.valid = false
             })
+        },
+
+        storeUser: (state, action) => {
+            const { accessToken, userId, username, color } = action.payload
+            console.log('store user exectures')
+            state.user.username = username;
+            state.user.userId = userId;
+            state.user.accessToken = accessToken
+            state.user.color = color
+        },
+
+        setHost: (state, action) => {
+            const { host } = action.payload
+            state.host = host
+        },
+
+        errorHandler: (state, action) => {
+            const { error } = action.payload
+            state.errorMessage = error
         }
     }
 })
 
 
 
-export const fetchAndStore = () => {
-    return (dispatch) => {
-        fetch('https://william-chess-board.herokuapp.com/squares')
+export const fetchAndStore = (roomid) => {
+    return (dispatch, getState) => {
+        const state = getState()
+        fetch(`https://william-chess-board.herokuapp.com/game/${roomid}`, {
+            headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' }
+        })
             .then((res) => res.json())
             .then((json) => {
-                dispatch(
-                    game.actions.storeSquares({
-                        squares: json.sort((a, b) => (a.row > b.row) ? 1 :
-                            (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
-                    })
-                )
+                if (json.message) {
+                    dispatch(game.actions.errorHandler({ error: json.message }))
+                } else {
+                    dispatch(
+                        game.actions.storeSquares({
+                            squares: json.gameBoard.sort((a, b) => (a.row > b.row) ? 1 :
+                                (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
+                        })
+                    )
+                    dispatch(
+                        game.actions.storeUser({
+                            username: json.username, accessToken: state.game.user.accessToken,
+                            userId: state.game.user.userId, color: json.color
+                        })
+                    )
+                    dispatch(
+                        game.actions.setHost({
+                            host: json.host
+                        })
+                    )
+                }
+
             })
     }
 }
 
-export const setPiece = (baseSquare, targetSquare) => {
+export const setPiece = (baseSquare, targetSquare, roomid) => {
+
     return (dispatch, getState) => {
         const state = getState()
         if (state.game.activePiece === false && baseSquare.piece) {
@@ -329,20 +384,43 @@ export const setPiece = (baseSquare, targetSquare) => {
             dispatch(game.actions.resetPiece())
         } else if (state.game.activePiece) {
             console.log('fetch fired')
-            fetch('https://william-chess-board.herokuapp.com/movepiece', {
+            fetch(`https://william-chess-board.herokuapp.com/game/${roomid}/movepiece`, {
                 method: 'POST',
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ baseSquare: state.game.activePiece, targetSquare })
+                headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn })
             })
                 .then((res) => res.json())
                 .then((json) => {
                     dispatch(
                         game.actions.storeSquares({
-                            squares: json.sort((a, b) => (a.row > b.row) ? 1 :
+                            squares: json.board.sort((a, b) => (a.row > b.row) ? 1 :
                                 (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
                         })
                     )
+                    dispatch(
+                        game.actions.newTurn({ currentTurn: json.currentTurn })
+                    )
                 })
         }
+    }
+}
+
+export const UserSignUp = (username, email, password) => {
+    return (dispatch) => {
+        console.log(username)
+        fetch('https://william-chess-board.herokuapp.com/signup', {
+            method: 'POST',
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ username: username, email: email, password: password })
+        })
+            .then((res) => res.json())
+            .then((json) => {
+                if (json.error) {
+                    console.log(json.error)
+                }
+                dispatch(
+                    game.actions.storeUser({ accessToken: json.accessToken, userId: json.id, username: json.username })
+                )
+            })
     }
 }
