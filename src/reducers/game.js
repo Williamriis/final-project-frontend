@@ -75,7 +75,8 @@ export const game = createSlice({
                         state.squares.forEach((square) => {
                             if (baseSquare._id === square._id) {
                                 square.valid = true;
-                            } else if (square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece) {
+                            } else if ((square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece) ||
+                                (square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece && !square.piece.color)) {
                                 square.valid = true;
                             } else if (square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece) {
                                 i = 5;
@@ -85,7 +86,7 @@ export const game = createSlice({
                     state.squares.forEach((square) => {
                         if ((square.column === baseSquare.column + 1 || square.column === baseSquare.column - 1) &&
                             square.row === baseSquare.row + 1 &&
-                            square.piece && square.piece.color !== baseSquare.piece.color) {
+                            square.piece && square.piece.type && square.piece.color !== baseSquare.piece.color) {
                             square.valid = true;
                         }
 
@@ -97,7 +98,8 @@ export const game = createSlice({
                         state.squares.forEach((square) => {
                             if (baseSquare._id === square._id) {
                                 square.valid = true;
-                            } else if (square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece) {
+                            } else if ((square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece) ||
+                                (square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece)) {
                                 square.valid = true;
                             } else if (square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece) {
                                 i = -5;
@@ -107,7 +109,7 @@ export const game = createSlice({
                     state.squares.forEach((square) => {
                         if ((square.column === baseSquare.column + 1 || square.column === baseSquare.column - 1) &&
                             square.row === baseSquare.row - 1 &&
-                            square.piece && square.piece.color !== baseSquare.piece.color) {
+                            square.piece && square.piece.type && square.piece.color !== baseSquare.piece.color) {
                             square.valid = true;
                         }
 
@@ -129,10 +131,11 @@ export const game = createSlice({
                         state.squares.forEach((square) => {
                             if ((baseSquare._id === square._id) ||
                                 (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y)) {
-                                if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && square.piece.color !== baseSquare.piece.color) {
+                                if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
                                     square.valid = true;
                                     scale = 9;
                                 } else if ((square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && !square.piece) ||
+                                    (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && !square.piece.type) ||
                                     baseSquare._id === square._id) {
                                     square.valid = true;
                                 } else {
@@ -158,11 +161,13 @@ export const game = createSlice({
                         state.squares.forEach((square) => {
                             if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x) ||
                                 (square.row === baseSquare.row && square.column === baseSquare.column + offset.y)) {
-                                if (square.piece && square.piece.color !== baseSquare.piece.color) {
+                                if (square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
                                     square.valid = true;
                                     scale = 9;
                                 } else if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x && !square.piece) ||
+                                    (square.column === baseSquare.column && square.row === baseSquare.row + offset.x && square.piece && !square.piece.type) ||
                                     (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && !square.piece) ||
+                                    (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && square.piece && !square.piece.type) ||
                                     (baseSquare._id === square._id)) {
                                     square.valid = true;
                                 } else {
@@ -222,11 +227,13 @@ export const game = createSlice({
                             state.squares.forEach((square) => {
                                 if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x) ||
                                     (square.row === baseSquare.row && square.column === baseSquare.column + offset.y)) {
-                                    if (square.piece && square.piece.color !== baseSquare.piece.color) {
+                                    if (square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
                                         square.valid = true;
                                         scale = 9;
                                     } else if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x && !square.piece) ||
+                                        (square.column === baseSquare.column && square.row === baseSquare.row + offset.x && square.piece && !square.piece.color) ||
                                         (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && !square.piece) ||
+                                        (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && square.piece && !square.piece.color) ||
                                         (baseSquare._id === square._id)) {
                                         square.valid = true;
                                     } else {
@@ -239,10 +246,11 @@ export const game = createSlice({
                             state.squares.forEach((square) => {
                                 if ((baseSquare._id === square._id) ||
                                     (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y)) {
-                                    if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && square.piece.color !== baseSquare.piece.color) {
+                                    if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
                                         square.valid = true;
                                         scale = 9;
                                     } else if ((square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && !square.piece) ||
+                                        (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && !square.piece.color) ||
                                         baseSquare._id === square._id) {
                                         square.valid = true;
                                     } else {
@@ -419,10 +427,11 @@ export const UserSignUp = (username, email, password) => {
             .then((json) => {
                 if (json.error) {
                     console.log(json.error)
+                } else {
+                    dispatch(
+                        game.actions.storeUser({ accessToken: json.accessToken, userId: json.id, username: json.username })
+                    )
                 }
-                dispatch(
-                    game.actions.storeUser({ accessToken: json.accessToken, userId: json.id, username: json.username })
-                )
             })
     }
 }
