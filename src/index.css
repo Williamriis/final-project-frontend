@@ -9,10 +9,18 @@ body {
   height: 100vh;
   align-items: center;
   justify-content: center;
-  background-color: #282c34;
+  background-size: 200% 200%;
+    background-image: linear-gradient(270deg, black, white);
+    animation: Test 20s ease infinite;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+@keyframes Test {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
 }

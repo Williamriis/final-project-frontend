@@ -1,6 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
+import io from 'socket.io-client'
+//import { socket } from '../components/socket'
+//import { otherSocket } from '../components/socket'
 
-
+let socket = io(`http://localhost:8080/`)
 const initialState = {
     squares: [
     ],
@@ -13,7 +16,10 @@ const initialState = {
     activePiece: false,
     currentTurn: "white",
     host: false,
-    errorMessage: false
+    errorMessage: false,
+    roomid: null,
+    inCheck: false,
+    lastMove: false
 }
 
 export const game = createSlice({
@@ -23,7 +29,9 @@ export const game = createSlice({
 
         storeSquares: (state, action) => {
             const { squares } = action.payload
-            state.squares = state.user.color === "white" ? squares.reverse() : squares
+            const clone = squares.map((square) => square)
+            const sorted = clone.sort((a, b) => (a.row > b.row) ? 1 : (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
+            state.squares = state.user.color === "white" ? sorted.reverse() : sorted
             state.activePiece = false
             state.errorMessage = false
         },
@@ -342,6 +350,24 @@ export const game = createSlice({
         errorHandler: (state, action) => {
             const { error } = action.payload
             state.errorMessage = error
+        },
+
+        setRoomId: (state, action) => {
+            const { roomId } = action.payload
+            state.roomid = roomId
+        },
+        setCheck: (state, action) => {
+            const { check } = action.payload
+            state.inCheck = check
+        },
+        setLastMove: (state, action) => {
+            const { movedFrom, movedTo, pieceMoved } = action.payload
+            state.lastMove = {
+                movedFrom: movedFrom,
+                movedTo: movedTo,
+                pieceMoved: pieceMoved,
+                pieceTaken: movedTo.piece && movedTo.piece.type ? movedTo.piece : false
+            }
         }
     }
 })
@@ -351,7 +377,7 @@ export const game = createSlice({
 export const fetchAndStore = (roomid) => {
     return (dispatch, getState) => {
         const state = getState()
-        fetch(`https://william-chess-board.herokuapp.com/game/${roomid}`, {
+        fetch(`http://localhost:8080/game/${roomid}`, {
             headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' }
         })
             .then((res) => res.json())
@@ -386,39 +412,63 @@ export const fetchAndStore = (roomid) => {
 
 export const setPiece = (baseSquare, targetSquare, roomid) => {
 
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const state = getState()
         if (state.game.activePiece === false && baseSquare.piece) {
             dispatch(game.actions.moveCalculator({ baseSquare }))
         } else if (state.game.activePiece && state.game.activePiece._id === targetSquare._id) {
             dispatch(game.actions.resetPiece())
         } else if (state.game.activePiece) {
-            console.log('fetch fired')
-            fetch(`https://william-chess-board.herokuapp.com/game/${roomid}/movepiece`, {
-                method: 'POST',
-                headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn })
+            dispatch(game.actions.setLastMove({ movedFrom: state.game.activePiece, movedTo: targetSquare, pieceMoved: state.game.activePiece.piece }))
+            //socket = io(`http://localhost:8080/${state.game.roomid}`)
+            socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
+
+            // fetch(`http://localhost:8080/game/${roomid}/movepiece`, {
+            //     method: 'POST',
+            //     headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn })
+            // })
+            //     .then((res) => res.json())
+            //     .then((json) => {
+            //     dispatch(
+            //         game.actions.storeSquares({
+            //             squares: json.board.sort((a, b) => (a.row > b.row) ? 1 :
+            //                 (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
+            //         })
+            //     )
+            //     dispatch(
+            //         game.actions.newTurn({ currentTurn: json.currentTurn })
+            //     )
+            //})
+            socket.on('update', data => {
+                dispatch(game.actions.storeSquares({ squares: data.board.board }))
+                dispatch(
+                    game.actions.newTurn({ currentTurn: data.currentTurn })
+                )
             })
-                .then((res) => res.json())
-                .then((json) => {
-                    dispatch(
-                        game.actions.storeSquares({
-                            squares: json.board.sort((a, b) => (a.row > b.row) ? 1 :
-                                (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
-                        })
-                    )
-                    dispatch(
-                        game.actions.newTurn({ currentTurn: json.currentTurn })
-                    )
-                })
+            socket.on('check', data => {
+                dispatch(game.actions.setCheck({ check: data }))
+            })
+
+            // socket.on('invalidMove', data => {
+            //     console.log(data)
+            //     if (pingCount === 1) {
+            //         socket.emit('undoMove', { lastMove: state.game.lastMove, roomid: roomid, color: state.game.currentTurn, inCheck: state.game.inCheck })
+            //     }
+
+            // })
+
+
+            //})
         }
     }
 }
 
+
 export const UserSignUp = (username, email, password) => {
     return (dispatch) => {
         console.log(username)
-        fetch('https://william-chess-board.herokuapp.com/signup', {
+        fetch('http://localhost:8080/signup', {
             method: 'POST',
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ username: username, email: email, password: password })
@@ -435,3 +485,6 @@ export const UserSignUp = (username, email, password) => {
             })
     }
 }
+
+
+
