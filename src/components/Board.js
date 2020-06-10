@@ -2,8 +2,9 @@ import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { fetchAndStore, setPiece } from '../reducers/game'
+import { fetchAndStore, setPiece, resetGame } from '../reducers/game'
 import { game } from '../reducers/game'
+
 import { socket } from './socket'
 
 
@@ -57,11 +58,19 @@ export const SetGame = () => {
 
   const movePiece = (baseSquare, targetSquare) => {
     // document.getElementById('sound').play()
-
     dispatch(
       setPiece(baseSquare, targetSquare, params.roomid)
     )
+    if (baseSquare.piece && baseSquare.piece.type && baseSquare.piece.type.includes('king') && !baseSquare.piece.moved) {
+      dispatch(game.actions.castleValidator({ piece: baseSquare }))
+    } else if (baseSquare.piece && baseSquare.piece.type && baseSquare.piece.type.includes('pawn')) {
+      dispatch(game.actions.enPassantValidator({ piece: baseSquare }))
+    }
 
+
+  }
+  const reset = () => {
+    dispatch(resetGame())
   }
 
   return (
@@ -69,6 +78,7 @@ export const SetGame = () => {
       {squares.length > 0 &&
         <>
           {host && <h1 style={{ color: "white" }}>{host}'s room</h1>}
+          <button type="button" onClick={() => reset()}>New Game</button>
           <Board>
             {squares.map((square, index) => {
               const imageUrl = square._id === activePiece._id ? require(`../assets/active-${square.piece.image}`) :

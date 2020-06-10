@@ -49,10 +49,11 @@ export const game = createSlice({
                     state.squares.forEach((square) => {
                         if ((baseSquare._id === square._id)) {
                             square.valid = true;
-                        } else if (square.column === baseSquare.column && square.row === baseSquare.row + 1 && !square.piece.type) {
+                        } else if ((square.column === baseSquare.column && square.row === baseSquare.row + 1 && square.piece && !square.piece.type) ||
+                            (square.column === baseSquare.column && square.row === baseSquare.row + 1 && !square.piece)) {
                             square.valid = true
                         } else if ((square.column === baseSquare.column + 1 || square.column === baseSquare.column - 1) &&
-                            square.row === baseSquare.row + 1 &&
+                            square.row === baseSquare.row + 1 && square.piece &&
                             square.piece.color && square.piece.color !== baseSquare.piece.color) {
                             square.valid = true
                         } else {
@@ -63,10 +64,11 @@ export const game = createSlice({
                     state.squares.forEach((square) => {
                         if (baseSquare._id === square._id) {
                             square.valid = true;
-                        } else if (square.column === baseSquare.column && square.row === baseSquare.row - 1 && !square.piece.type) {
+                        } else if ((square.column === baseSquare.column && square.row === baseSquare.row - 1 && square.piece && !square.piece.type) ||
+                            (square.column === baseSquare.column && square.row === baseSquare.row - 1 && !square.piece)) {
                             square.valid = true;
                         } else if ((square.column === baseSquare.column + 1 || square.column === baseSquare.column - 1) &&
-                            square.row === baseSquare.row - 1 && square.piece.color && square.piece.color !== baseSquare.piece.color) {
+                            square.row === baseSquare.row - 1 && square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
                             square.valid = true;
                         } else {
                             square.valid = false;
@@ -106,7 +108,7 @@ export const game = createSlice({
                         state.squares.forEach((square) => {
                             if (baseSquare._id === square._id) {
                                 square.valid = true;
-                            } else if ((square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece) ||
+                            } else if ((square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece && !square.piece.color) ||
                                 (square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece)) {
                                 square.valid = true;
                             } else if (square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece) {
@@ -368,6 +370,41 @@ export const game = createSlice({
                 pieceMoved: pieceMoved,
                 pieceTaken: movedTo.piece && movedTo.piece.type ? movedTo.piece : false
             }
+        },
+
+        castleValidator: (state, action) => {
+            console.log('castle check')
+            const { piece } = action.payload
+            const blankSquaresLeft = state.squares.filter((square) => square.row === piece.row && square.column > 1 && square.column < 5 && !square.piece.type)
+            const blankSquaresRight = state.squares.filter((square) => square.row === piece.row && square.column > 5 && square.column < 8 && !square.piece.type)
+            if (piece.piece.color !== state.inCheck) {
+                state.squares.forEach((square) => {
+                    if (square.row === piece.row && square.piece.type && square.piece.type.includes('rook') && !square.piece.moved) {
+                        if (square.column === 1 && blankSquaresLeft.length === 3) {
+                            square.valid = true;
+                        } else if (square.column === 8 && blankSquaresRight.length === 2) {
+                            square.valid = true;
+                        }
+                    }
+                })
+            }
+        },
+        enPassantValidator: (state, action) => {
+            const { piece } = action.payload
+            if (state.activePiece) {
+                if (state.lastMove.pieceMoved && state.lastMove.pieceMoved.type.includes('pawn')) {
+                    if (state.lastMove.movedFrom.row - state.lastMove.movedTo.row === piece.piece.color === 'white' ? 2 : -2) {
+
+                        if (state.lastMove.movedTo.row === piece.row && (state.lastMove.movedTo.column === piece.column + 1 || piece.column - 1)) {
+                            console.log('enPassant')
+                            const enPassantSquare = piece.piece.color === 'white' ? state.squares.find((square) => square.column === state.lastMove.movedFrom.column && square.row === state.lastMove.movedFrom.row - 1)
+                                : state.squares.find((square) => square.column === state.lastMove.movedFrom.column && square.row === state.lastMove.movedFrom.row + 1)
+                            enPassantSquare.valid = true;
+                        }
+                    }
+                }
+            } else { }
+
         }
     }
 })
@@ -420,8 +457,13 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
             dispatch(game.actions.resetPiece())
         } else if (state.game.activePiece) {
             dispatch(game.actions.setLastMove({ movedFrom: state.game.activePiece, movedTo: targetSquare, pieceMoved: state.game.activePiece.piece }))
-            //socket = io(`http://localhost:8080/${state.game.roomid}`)
-            socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
+            if (state.game.activePiece.piece.type.includes('king') && targetSquare.piece && targetSquare.piece.type && targetSquare.piece.type.includes('rook')) {
+                socket.emit('castle', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
+            } else if (state.game.activePiece.piece.type.includes('pawn') && (targetSquare.column === state.game.activePiece.column + 1 || targetSquare.column === state.game.activePiece.column - 1) && ((targetSquare.piece && !targetSquare.piece.type) || !targetSquare.piece)) {
+                socket.emit('enPassant', { oldSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid })
+            } else {
+                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
+            }
 
             // fetch(`http://localhost:8080/game/${roomid}/movepiece`, {
             //     method: 'POST',
@@ -450,16 +492,10 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
                 dispatch(game.actions.setCheck({ check: data }))
             })
 
-            // socket.on('invalidMove', data => {
-            //     console.log(data)
-            //     if (pingCount === 1) {
-            //         socket.emit('undoMove', { lastMove: state.game.lastMove, roomid: roomid, color: state.game.currentTurn, inCheck: state.game.inCheck })
-            //     }
-
-            // })
 
 
-            //})
+
+
         }
     }
 }
@@ -485,6 +521,18 @@ export const UserSignUp = (username, email, password) => {
             })
     }
 }
+export const resetGame = () => {
+    return (dispatch, getState) => {
+        const state = getState()
+        fetch(`http://localhost:8080/game/${state.game.user.userId}/reset`)
+            .then((res) => res.json())
+            .then((json) => {
+                dispatch(game.actions.storeSquares({ squares: json }))
+                dispatch(game.actions.setCheck({ check: false }))
+                dispatch(game.actions.newTurn({ currentTurn: 'white' }))
+            })
+    }
 
+}
 
 
