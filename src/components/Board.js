@@ -2,10 +2,10 @@ import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { fetchAndStore, setPiece, resetGame } from '../reducers/game'
+import { fetchAndStore, setPiece, resetGame, pawnPromotion } from '../reducers/game'
 import { game } from '../reducers/game'
 
-import { socket } from './socket'
+
 
 
 const Board = styled.div`
@@ -33,10 +33,10 @@ const PieceImage = styled.img`
 const AudioPlayer = styled.audio`
    display: none;
 `
-// const Promotion = styled.button`
-//   background: transparent;
-//   border: none;
-// `
+const Promotion = styled.button`
+  background: transparent;
+  border: none;
+`
 
 export const SetGame = () => {
   const dispatch = useDispatch()
@@ -48,16 +48,17 @@ export const SetGame = () => {
   const host = useSelector((store) => store.game.host)
   const user = useSelector((store) => store.game.user)
   const check = useSelector((store) => store.game.inCheck)
-  // socket.on('update', data => {
-  //   //console.log(data)
-  //   dispatch(game.actions.storeSquares({ squares: data.board.board }))
-  // })
+  const myLostPieces = useSelector((store) => store.game.lostPieces[user.color])
+  const foesLostPieces = useSelector((store) => store.game.lostPieces[user.color === "white" ? "black" : "white"])
+  const promote = useSelector((store) => store.game.promote)
+
   useEffect(() => {
     dispatch(fetchAndStore(params.roomid))
   }, [dispatch])
 
   const movePiece = (baseSquare, targetSquare) => {
     // document.getElementById('sound').play()
+
     dispatch(
       setPiece(baseSquare, targetSquare, params.roomid)
     )
@@ -73,12 +74,20 @@ export const SetGame = () => {
     dispatch(resetGame())
   }
 
+  const promotePawn = (piece) => {
+    dispatch(pawnPromotion(piece, params.roomid))
+  }
+
   return (
     <>
       {squares.length > 0 &&
         <>
           {host && <h1 style={{ color: "white" }}>{host}'s room</h1>}
           <button type="button" onClick={() => reset()}>New Game</button>
+          {foesLostPieces.length > 0 && foesLostPieces.map((piece) => {
+            const imgUrl = require(`../assets/${piece.image}`)
+            return <Promotion type="button"><img src={imgUrl} style={{ height: "50px", width: "50px" }} /></Promotion>
+          })}
           <Board>
             {squares.map((square, index) => {
               const imageUrl = square._id === activePiece._id ? require(`../assets/active-${square.piece.image}`) :
@@ -89,6 +98,12 @@ export const SetGame = () => {
                 onClick={() => movePiece(square, square)}>{square.piece && square.piece.image && <PieceImage src={imageUrl} />}</Square>
             })}
           </Board>
+          {myLostPieces.length > 0 && myLostPieces.map((piece) => {
+            const imgUrl = require(`../assets/${piece.image}`)
+            return <Promotion type="button"
+              disabled={promote !== user.color}
+              onClick={() => promotePawn(piece)}><img src={imgUrl} style={{ height: "50px", width: "50px" }} /></Promotion>
+          })}
           <h1 style={{ color: check === "black" ? "black" : "whit" }}>In check: {check && check}</h1>
         </>}
       {/* {<AudioPlayer id="sound" src={require('../assets/oldman.mp3')} preload controls />} */}

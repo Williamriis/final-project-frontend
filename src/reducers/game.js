@@ -19,7 +19,13 @@ const initialState = {
     errorMessage: false,
     roomid: null,
     inCheck: false,
-    lastMove: false
+    lastMove: false,
+    lostPieces: {
+        white: [],
+        black: []
+    },
+    promote: false
+
 }
 
 export const game = createSlice({
@@ -28,12 +34,16 @@ export const game = createSlice({
     reducers: {
 
         storeSquares: (state, action) => {
-            const { squares } = action.payload
+            const { squares, reset } = action.payload
             const clone = squares.map((square) => square)
             const sorted = clone.sort((a, b) => (a.row > b.row) ? 1 : (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
             state.squares = state.user.color === "white" ? sorted.reverse() : sorted
             state.activePiece = false
             state.errorMessage = false
+            if (reset) {
+                state.lostPieces.white = []
+                state.lostPieces.black = []
+            }
         },
 
         newTurn: (state, action) => {
@@ -342,6 +352,7 @@ export const game = createSlice({
             state.user.userId = userId;
             state.user.accessToken = accessToken
             state.user.color = color
+
         },
 
         setHost: (state, action) => {
@@ -390,6 +401,8 @@ export const game = createSlice({
             }
         },
         enPassantValidator: (state, action) => {
+            //this will need to be fixed: lastMove must be determined by backend otherwise remote players will
+            //only ever save their own moves in state.
             const { piece } = action.payload
             if (state.activePiece) {
                 if (state.lastMove.pieceMoved && state.lastMove.pieceMoved.type.includes('pawn')) {
@@ -405,6 +418,23 @@ export const game = createSlice({
                 }
             } else { }
 
+        },
+        takenPiece: (state, action) => {
+            const { takenPiece } = action.payload
+            const existing = state.lostPieces[takenPiece.color].find((piece) => piece.type === takenPiece.type)
+            if (!existing) {
+                state.lostPieces[takenPiece.color].push(takenPiece)
+            } else { }
+        },
+        promoteValidator: (state, action) => {
+            const { promote, promotedPiece } = action.payload
+            if (promotedPiece) {
+                state.lostPieces[promotedPiece.color] = state.lostPieces[promotedPiece.color].filter((piece) => piece.type !== promotedPiece.type)
+                state.promote = false
+            } else {
+                state.promote = promote
+
+            }
         }
     }
 })
@@ -461,6 +491,9 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
                 socket.emit('castle', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
             } else if (state.game.activePiece.piece.type.includes('pawn') && (targetSquare.column === state.game.activePiece.column + 1 || targetSquare.column === state.game.activePiece.column - 1) && ((targetSquare.piece && !targetSquare.piece.type) || !targetSquare.piece)) {
                 socket.emit('enPassant', { oldSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid })
+            } else if (state.game.activePiece.piece.type.includes('pawn') && ((state.game.activePiece.piece.color === "white" && targetSquare.row === 8 && state.game.lostPieces.white.length > 0)
+                || (state.game.activePiece.piece.color === "black" && targetSquare.row === 1 && state.game.lostPieces.black.length > 0))) {
+                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, promote: true })
             } else {
                 socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
             }
@@ -483,6 +516,16 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
             //     )
             //})
             socket.on('update', data => {
+                if (data.takenPiece) {
+                    dispatch(game.actions.takenPiece({ takenPiece: data.takenPiece }))
+                }
+                if (data.promote) {
+                    dispatch(game.actions.promoteValidator({ promote: data.promote }))
+                }
+                if (data.promotedPiece) {
+
+                    dispatch(game.actions.promoteValidator({ promotedPiece: data.promotedPiece }))
+                }
                 dispatch(game.actions.storeSquares({ squares: data.board.board }))
                 dispatch(
                     game.actions.newTurn({ currentTurn: data.currentTurn })
@@ -527,12 +570,19 @@ export const resetGame = () => {
         fetch(`http://localhost:8080/game/${state.game.user.userId}/reset`)
             .then((res) => res.json())
             .then((json) => {
-                dispatch(game.actions.storeSquares({ squares: json }))
+                dispatch(game.actions.storeSquares({ squares: json, reset: true }))
                 dispatch(game.actions.setCheck({ check: false }))
                 dispatch(game.actions.newTurn({ currentTurn: 'white' }))
             })
     }
 
 }
+export const pawnPromotion = (piece, roomid) => {
 
+    return (dispatch, getState) => {
+        const state = getState()
+        socket.emit('pawnPromotion', { piece, targetSquare: state.game.lastMove.movedTo, roomid, color: state.game.currentTurn })
+    }
+
+}
 
