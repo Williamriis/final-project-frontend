@@ -476,14 +476,31 @@ export const fetchAndStore = (roomid) => {
                 }
 
             })
+        socket.on('update', data => {
+            if (data.takenPiece) {
+                dispatch(game.actions.takenPiece({ takenPiece: data.takenPiece }))
+            }
+            if (data.promote) {
+                dispatch(game.actions.promoteValidator({ promote: data.promote }))
+            }
+            if (data.promotedPiece) {
+
+                dispatch(game.actions.promoteValidator({ promotedPiece: data.promotedPiece }))
+            }
+            dispatch(game.actions.storeSquares({ squares: data.board.board }))
+            dispatch(
+                game.actions.newTurn({ currentTurn: data.currentTurn })
+            )
+            if (data.lastMove) {
+                dispatch(game.actions.setLastMove({ lastMove: data.lastMove }))
+
+            }
+        })
     }
 }
 
 export const setPiece = (baseSquare, targetSquare, roomid) => {
     return async (dispatch, getState) => {
-        socket.on('greeting', data => {
-            console.log(data)
-        })
         const state = getState()
         if (state.game.activePiece === false && baseSquare.piece) {
             dispatch(game.actions.moveCalculator({ baseSquare }))
@@ -518,26 +535,7 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
             //         game.actions.newTurn({ currentTurn: json.currentTurn })
             //     )
             //})
-            socket.on('update', data => {
-                if (data.takenPiece) {
-                    dispatch(game.actions.takenPiece({ takenPiece: data.takenPiece }))
-                }
-                if (data.promote) {
-                    dispatch(game.actions.promoteValidator({ promote: data.promote }))
-                }
-                if (data.promotedPiece) {
 
-                    dispatch(game.actions.promoteValidator({ promotedPiece: data.promotedPiece }))
-                }
-                dispatch(game.actions.storeSquares({ squares: data.board.board }))
-                dispatch(
-                    game.actions.newTurn({ currentTurn: data.currentTurn })
-                )
-                if (data.lastMove) {
-                    dispatch(game.actions.setLastMove({ lastMove: data.lastMove }))
-
-                }
-            })
             socket.on('check', data => {
                 dispatch(game.actions.setCheck({ check: data }))
             })
