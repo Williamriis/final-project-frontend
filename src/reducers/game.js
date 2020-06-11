@@ -3,7 +3,7 @@ import io from 'socket.io-client'
 //import { socket } from '../components/socket'
 //import { otherSocket } from '../components/socket'
 
-let socket = io(`http://localhost:8080/`)
+let socket = io(`https://william-chess-board.herokuapp.com/`)
 const initialState = {
     squares: [
     ],
@@ -374,12 +374,12 @@ export const game = createSlice({
             state.inCheck = check
         },
         setLastMove: (state, action) => {
-            const { movedFrom, movedTo, pieceMoved } = action.payload
+            const { lastMove } = action.payload
             state.lastMove = {
-                movedFrom: movedFrom,
-                movedTo: movedTo,
-                pieceMoved: pieceMoved,
-                pieceTaken: movedTo.piece && movedTo.piece.type ? movedTo.piece : false
+                movedFrom: lastMove.movedFrom,
+                movedTo: lastMove.movedTo,
+                pieceMoved: lastMove.pieceMoved,
+
             }
         },
 
@@ -401,17 +401,17 @@ export const game = createSlice({
             }
         },
         enPassantValidator: (state, action) => {
-            //this will need to be fixed: lastMove must be determined by backend otherwise remote players will
-            //only ever save their own moves in state.
             const { piece } = action.payload
             if (state.activePiece) {
                 if (state.lastMove.pieceMoved && state.lastMove.pieceMoved.type.includes('pawn')) {
                     if (state.lastMove.movedFrom.row - state.lastMove.movedTo.row === piece.piece.color === 'white' ? 2 : -2) {
 
-                        if (state.lastMove.movedTo.row === piece.row && (state.lastMove.movedTo.column === piece.column + 1 || piece.column - 1)) {
+                        if (state.lastMove.movedTo.row === piece.row && (state.lastMove.movedTo.column === piece.column + 1 || state.lastMove.movedTo.column === piece.column - 1)) {
                             console.log('enPassant')
-                            const enPassantSquare = piece.piece.color === 'white' ? state.squares.find((square) => square.column === state.lastMove.movedFrom.column && square.row === state.lastMove.movedFrom.row - 1)
-                                : state.squares.find((square) => square.column === state.lastMove.movedFrom.column && square.row === state.lastMove.movedFrom.row + 1)
+                            const enPassantSquare = piece.piece.color === 'white' ? state.squares.find((square) => square.column === state.lastMove.movedFrom.column
+                                && (square.column === piece.column + 1 || square.column === piece.column - 1) && square.row === state.lastMove.movedFrom.row - 1)
+                                : state.squares.find((square) => square.column === state.lastMove.movedFrom.column &&
+                                    (square.column === piece.column + 1 || square.column === piece.column - 1) && square.row === state.lastMove.movedFrom.row + 1)
                             enPassantSquare.valid = true;
                         }
                     }
@@ -444,7 +444,7 @@ export const game = createSlice({
 export const fetchAndStore = (roomid) => {
     return (dispatch, getState) => {
         const state = getState()
-        fetch(`http://localhost:8080/game/${roomid}`, {
+        fetch(`https://william-chess-board.herokuapp.com/game/${roomid}`, {
             headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' }
         })
             .then((res) => res.json())
@@ -486,7 +486,6 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
         } else if (state.game.activePiece && state.game.activePiece._id === targetSquare._id) {
             dispatch(game.actions.resetPiece())
         } else if (state.game.activePiece) {
-            dispatch(game.actions.setLastMove({ movedFrom: state.game.activePiece, movedTo: targetSquare, pieceMoved: state.game.activePiece.piece }))
             if (state.game.activePiece.piece.type.includes('king') && targetSquare.piece && targetSquare.piece.type && targetSquare.piece.type.includes('rook')) {
                 socket.emit('castle', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
             } else if (state.game.activePiece.piece.type.includes('pawn') && (targetSquare.column === state.game.activePiece.column + 1 || targetSquare.column === state.game.activePiece.column - 1) && ((targetSquare.piece && !targetSquare.piece.type) || !targetSquare.piece)) {
@@ -530,6 +529,10 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
                 dispatch(
                     game.actions.newTurn({ currentTurn: data.currentTurn })
                 )
+                if (data.lastMove) {
+                    dispatch(game.actions.setLastMove({ lastMove: data.lastMove }))
+
+                }
             })
             socket.on('check', data => {
                 dispatch(game.actions.setCheck({ check: data }))
@@ -547,7 +550,7 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
 export const UserSignUp = (username, email, password) => {
     return (dispatch) => {
         console.log(username)
-        fetch('http://localhost:8080/signup', {
+        fetch('https://william-chess-board.herokuapp.com/signup', {
             method: 'POST',
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ username: username, email: email, password: password })
@@ -567,7 +570,7 @@ export const UserSignUp = (username, email, password) => {
 export const resetGame = () => {
     return (dispatch, getState) => {
         const state = getState()
-        fetch(`http://localhost:8080/game/${state.game.user.userId}/reset`)
+        fetch(`https://william-chess-board.herokuapp.com/game/${state.game.user.userId}/reset`)
             .then((res) => res.json())
             .then((json) => {
                 dispatch(game.actions.storeSquares({ squares: json, reset: true }))
