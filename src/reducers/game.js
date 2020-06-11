@@ -442,6 +442,7 @@ export const game = createSlice({
 
 
 export const fetchAndStore = (roomid) => {
+    socket.emit('wake-up', 'hello')
     return (dispatch, getState) => {
         const state = getState()
         fetch(`https://william-chess-board.herokuapp.com/game/${roomid}`, {
