@@ -4,6 +4,9 @@ import io from 'socket.io-client'
 //import { otherSocket } from '../components/socket'
 
 let socket = io(`https://william-chess-board.herokuapp.com/`)
+socket.on('greeting', data => {
+    console.log(data)
+})
 const initialState = {
     squares: [
     ],
