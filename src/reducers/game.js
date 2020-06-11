@@ -4,9 +4,7 @@ import io from 'socket.io-client'
 //import { otherSocket } from '../components/socket'
 
 let socket = io(`https://william-chess-board.herokuapp.com/`)
-socket.on('greeting', data => {
-    console.log(data)
-})
+
 const initialState = {
     squares: [
     ],
@@ -482,8 +480,10 @@ export const fetchAndStore = (roomid) => {
 }
 
 export const setPiece = (baseSquare, targetSquare, roomid) => {
-
     return async (dispatch, getState) => {
+        socket.on('greeting', data => {
+            console.log(data)
+        })
         const state = getState()
         if (state.game.activePiece === false && baseSquare.piece) {
             dispatch(game.actions.moveCalculator({ baseSquare }))
