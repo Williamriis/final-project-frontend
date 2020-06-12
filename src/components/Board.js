@@ -93,7 +93,7 @@ export const SetGame = () => {
             {squares.map((square, index) => {
               const imageUrl = square._id === activePiece._id ? require(`../assets/active-${square.piece.image}`) :
                 square.piece && square.piece.image ? require(`../assets/${square.piece.image}`) : ''
-              return <Square key={square._id} index={index} row={square.row}
+              return <Square key={square._id} index={index} row={square.row} user={user.color}
                 disabled={(activePiece && !square.valid) || (!activePiece && square.piece && square.piece.color && square.piece.color !== currentTurn) || (!activePiece && !square.piece) || (!activePiece && square.piece && !square.piece.type)}
                 valid={square.valid}
                 onClick={() => movePiece(square, square)}>{square.piece && square.piece.image && <PieceImage src={imageUrl} />}</Square>
