@@ -80,11 +80,11 @@ export const SetGame = () => {
 
   return (
     <>
-      {squares.length > 0 &&
+      {squares && squares.length > 0 &&
         <>
           {host && <h1 style={{ color: "white" }}>{host}'s room</h1>}
           <button type="button" onClick={() => reset()}>New Game</button>
-          {foesLostPieces.length > 0 && foesLostPieces.map((piece) => {
+          {foesLostPieces && foesLostPieces.length > 0 && foesLostPieces.map((piece) => {
             const imgUrl = require(`../assets/${piece.image}`)
             return <Promotion type="button"><img src={imgUrl} style={{ height: "50px", width: "50px" }} /></Promotion>
           })}
@@ -98,7 +98,7 @@ export const SetGame = () => {
                 onClick={() => movePiece(square, square)}>{square.piece && square.piece.image && <PieceImage src={imageUrl} />}</Square>
             })}
           </Board>
-          {myLostPieces.length > 0 && myLostPieces.map((piece) => {
+          {myLostPieces && myLostPieces.length > 0 && myLostPieces.map((piece) => {
             const imgUrl = require(`../assets/${piece.image}`)
             return <Promotion type="button"
               disabled={promote !== user.color}
