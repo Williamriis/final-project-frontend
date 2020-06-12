@@ -21,8 +21,8 @@ const Square = styled.button`
   width: 100%;
   margin: 0;
   background-color: ${props => props.user === 'white' ? props.index % 2 === 0 && props.row % 2 === 0 ? 'white' :
-    props.index % 2 !== 0 && props.row % 2 !== 0 ? 'white' : 'navy' : props.index % 2 !== 0 && props.row % 2 !== 0 ? 'white' :
-      props.index % 2 === 0 && props.row % 2 === 0 ? 'white' : 'navy'};
+    props.index % 2 !== 0 && props.row % 2 !== 0 ? 'white' : 'navy' : props.index % 2 === 0 && props.row % 2 === 0 ? 'navy' :
+      props.index % 2 !== 0 && props.row % 2 !== 0 ? 'navy' : 'white'};
 border: ${props => props.valid ? '5px solid green' : 'none'}
 `
 
