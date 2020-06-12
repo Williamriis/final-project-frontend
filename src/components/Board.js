@@ -20,8 +20,9 @@ const Square = styled.button`
   padding: 10px;
   width: 100%;
   margin: 0;
-  background-color: ${props => props.index % 2 === 0 && props.row % 2 === 0 ? 'white' :
-    props.index % 2 !== 0 && props.row % 2 !== 0 ? 'white' : 'navy'};
+  background-color: ${props => props.user === 'white' ? props.index % 2 === 0 && props.row % 2 === 0 ? 'white' :
+    props.index % 2 !== 0 && props.row % 2 !== 0 ? 'white' : 'navy' : props.index % 2 !== 0 && props.row % 2 !== 0 ? 'white' :
+      props.index % 2 === 0 && props.row % 2 === 0 ? 'white' : 'navy'};
 border: ${props => props.valid ? '5px solid green' : 'none'}
 `
 
