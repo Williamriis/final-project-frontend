@@ -3,7 +3,7 @@ import io from 'socket.io-client'
 //import { socket } from '../components/socket'
 //import { otherSocket } from '../components/socket'
 
-let socket = io(`https://william-chess-board.herokuapp.com/`)
+let socket = io(`http://localhost:8080/`)
 
 const initialState = {
     squares: [
@@ -14,9 +14,16 @@ const initialState = {
         accessToken: false,
         color: null
     },
+    opponent: {
+        username: false,
+        color: false
+    },
     activePiece: false,
     currentTurn: "white",
-    host: false,
+    host: {
+        username: false,
+        color: "white"
+    },
     errorMessage: false,
     roomid: null,
     inCheck: false,
@@ -25,7 +32,13 @@ const initialState = {
         white: [],
         black: []
     },
-    promote: false
+    promote: false,
+    checkCount: {
+        white: false,
+        black: false
+    },
+    winner: false,
+
 
 }
 
@@ -44,6 +57,9 @@ export const game = createSlice({
             if (reset) {
                 state.lostPieces.white = []
                 state.lostPieces.black = []
+                state.promote = false
+                state.winner = false
+                state.lastMove = false
             }
         },
 
@@ -354,11 +370,13 @@ export const game = createSlice({
             state.user.accessToken = accessToken
             state.user.color = color
 
+
         },
 
         setHost: (state, action) => {
             const { host } = action.payload
-            state.host = host
+            state.host.username = host
+
         },
 
         errorHandler: (state, action) => {
@@ -436,6 +454,30 @@ export const game = createSlice({
                 state.promote = promote
 
             }
+        },
+        setCheckCount: (state, action) => {
+            const { count, decrement } = action.payload
+            if (decrement) {
+                state.checkCount[state.inCheck] = state.checkCount[state.inCheck] - 1
+            } else if (count === 'reset') {
+                state.checkCount.white = false;
+                state.checkCount.black = false
+            } else {
+                state.checkCount[state.inCheck] = count
+            }
+            if (state.checkCount[state.inCheck] === 0) {
+                state.winner = state.inCheck === 'white' ? 'black' : 'white'
+            }
+        },
+        setOpponent: (state, action) => {
+            const { username, color } = action.payload
+
+            state.opponent.username = username
+            state.opponent.color = color
+
+
+
+
         }
     }
 })
@@ -443,10 +485,10 @@ export const game = createSlice({
 
 
 export const fetchAndStore = (roomid) => {
-    socket.emit('wake-up', 'hello')
+
     return (dispatch, getState) => {
         const state = getState()
-        fetch(`https://william-chess-board.herokuapp.com/game/${roomid}`, {
+        fetch(`http://localhost:8080/game/${roomid}`, {
             headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' }
         })
             .then((res) => res.json())
@@ -454,7 +496,7 @@ export const fetchAndStore = (roomid) => {
                 if (json.message) {
                     dispatch(game.actions.errorHandler({ error: json.message }))
                 } else {
-
+                    socket.emit('arrival', { username: json.username, color: json.color })
                     dispatch(
                         game.actions.storeUser({
                             username: json.username, accessToken: state.game.user.accessToken,
@@ -476,6 +518,12 @@ export const fetchAndStore = (roomid) => {
                 }
 
             })
+
+        socket.on('storeGuest', data => {
+
+            dispatch(game.actions.setOpponent({ username: data.username, color: data.color }))
+
+        })
         socket.on('update', data => {
             if (data.takenPiece) {
                 dispatch(game.actions.takenPiece({ takenPiece: data.takenPiece }))
@@ -487,14 +535,20 @@ export const fetchAndStore = (roomid) => {
 
                 dispatch(game.actions.promoteValidator({ promotedPiece: data.promotedPiece }))
             }
-            dispatch(game.actions.storeSquares({ squares: data.board.board }))
-            dispatch(
-                game.actions.newTurn({ currentTurn: data.currentTurn })
-            )
             if (data.lastMove) {
                 dispatch(game.actions.setLastMove({ lastMove: data.lastMove }))
 
             }
+            if (data.checkCount === 3) {
+                dispatch(game.actions.setCheckCount({ count: data.checkCount }))
+            } else if (data.checkCount === 'reset') {
+                dispatch(game.actions.setCheckCount({ count: 'reset' }))
+            }
+            if (data.decrementCheckCount) {
+                dispatch(game.actions.setCheckCount({ decrement: true }))
+            }
+            dispatch(game.actions.storeSquares({ squares: data.board.board }))
+            dispatch(game.actions.newTurn({ currentTurn: data.currentTurn }))
         })
     }
 }
@@ -507,15 +561,15 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
         } else if (state.game.activePiece && state.game.activePiece._id === targetSquare._id) {
             dispatch(game.actions.resetPiece())
         } else if (state.game.activePiece) {
-            if (state.game.activePiece.piece.type.includes('king') && targetSquare.piece && targetSquare.piece.type && targetSquare.piece.type.includes('rook')) {
+            if (state.game.activePiece.piece.type.includes('king') && targetSquare.piece && targetSquare.piece.type && targetSquare.piece.type.includes('rook') && targetSquare.piece.color === state.game.activePiece.piece.color) {
                 socket.emit('castle', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
             } else if (state.game.activePiece.piece.type.includes('pawn') && (targetSquare.column === state.game.activePiece.column + 1 || targetSquare.column === state.game.activePiece.column - 1) && ((targetSquare.piece && !targetSquare.piece.type) || !targetSquare.piece)) {
-                socket.emit('enPassant', { oldSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid })
+                socket.emit('enPassant', { oldSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid, check: state.game.activePiece.piece.color === state.game.inCheck ? true : false })
             } else if (state.game.activePiece.piece.type.includes('pawn') && ((state.game.activePiece.piece.color === "white" && targetSquare.row === 8 && state.game.lostPieces.white.length > 0)
                 || (state.game.activePiece.piece.color === "black" && targetSquare.row === 1 && state.game.lostPieces.black.length > 0))) {
-                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, promote: true })
+                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, promote: true, check: state.game.activePiece.piece.color === state.game.inCheck ? true : false })
             } else {
-                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
+                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, check: state.game.activePiece.piece.color === state.game.inCheck ? true : false })
             }
 
             // fetch(`http://localhost:8080/game/${roomid}/movepiece`, {
@@ -552,7 +606,7 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
 export const UserSignUp = (username, email, password) => {
     return (dispatch) => {
         console.log(username)
-        fetch('https://william-chess-board.herokuapp.com/signup', {
+        fetch('http://localhost:8080/signup', {
             method: 'POST',
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ username: username, email: email, password: password })
@@ -569,16 +623,24 @@ export const UserSignUp = (username, email, password) => {
             })
     }
 }
-export const resetGame = () => {
+export const resetGame = (roomid) => {
     return (dispatch, getState) => {
         const state = getState()
-        fetch(`https://william-chess-board.herokuapp.com/game/${state.game.user.userId}/reset`)
-            .then((res) => res.json())
-            .then((json) => {
-                dispatch(game.actions.storeSquares({ squares: json, reset: true }))
-                dispatch(game.actions.setCheck({ check: false }))
-                dispatch(game.actions.newTurn({ currentTurn: 'white' }))
-            })
+        // fetch(`http://localhost:8080/game/${state.game.user.userId}/reset`)
+        //     .then((res) => res.json())
+        //     .then((json) => {
+        //         dispatch(game.actions.storeSquares({ squares: json, reset: true }))
+        //         dispatch(game.actions.setCheck({ check: false }))
+        //         dispatch(game.actions.newTurn({ currentTurn: 'white' }))
+        //     })
+        socket.emit('reset', roomid)
+
+        socket.on('newGame', data => {
+            dispatch(game.actions.storeSquares({ squares: data, reset: true }))
+            dispatch(game.actions.setCheck({ check: false }))
+            dispatch(game.actions.setCheckCount({ count: 'reset' }))
+            dispatch(game.actions.newTurn({ currentTurn: 'white' }))
+        })
     }
 
 }
