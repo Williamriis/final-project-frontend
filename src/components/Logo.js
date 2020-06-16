@@ -51,7 +51,7 @@ const SubHeader = styled.p`
 padding: 0 10px;
 `
 
-export const Logo = () => {
+export const Logo = ({ text }) => {
 
   return (
     <Container>
@@ -61,7 +61,7 @@ export const Logo = () => {
           <Line width={"90%"}></Line>
           <Line width={"100%"}></Line>
         </LineContainer>
-        <SubHeader >COME ABOARD</SubHeader>
+        <SubHeader >{text}</SubHeader>
         <LineContainer align={"flex-start"}>
           <Line width={"90%"}></Line>
           <Line width={"100%"}></Line>

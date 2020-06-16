@@ -614,7 +614,7 @@ export const UserSignUp = (username, email, password) => {
             .then((res) => res.json())
             .then((json) => {
                 if (json.error) {
-                    console.log(json.error)
+                    dispatch(game.actions.errorHandler({ error: json.error }))
                 } else {
                     dispatch(
                         game.actions.storeUser({ accessToken: json.accessToken, userId: json.id, username: json.username })
@@ -623,10 +623,9 @@ export const UserSignUp = (username, email, password) => {
             })
     }
 }
-export const UserLogin = (username, email, password) => {
+export const UserLogin = (email, password) => {
     return (dispatch) => {
-        console.log(username)
-        fetch('http://localhost:8080/signup', {
+        fetch('http://localhost:8080/sessions', {
             method: 'POST',
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ email: email, password: password })
@@ -634,10 +633,10 @@ export const UserLogin = (username, email, password) => {
             .then((res) => res.json())
             .then((json) => {
                 if (json.error) {
-                    console.log(json.error)
+                    dispatch(game.actions.errorHandler({ error: json.error }))
                 } else {
                     dispatch(
-                        game.actions.storeUser({ accessToken: json.accessToken, userId: json.id, username: json.username })
+                        game.actions.storeUser({ accessToken: json.accessToken, userId: json.userId, username: json.username })
                     )
                 }
             })

@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
 import styled, { keyframes } from 'styled-components'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 import { Logo } from '../components/Logo'
 import { FormButton, FormText, Input, Form } from '../components/FormComponents'
 import { Stars } from '../components/Stars'
 import { UserLogin } from '../reducers/game'
+import { game } from '../reducers/game'
+import { ErrorMessage } from '../components/ErrorMessage'
 
 const Container = styled.section`
   display: flex;
@@ -14,7 +16,7 @@ const Container = styled.section`
   width: 100%;
 `
 const Fly = (left, top, baseLeft, baseTop) => keyframes`
-${console.log(left)}
+
   0% {top: ${baseTop}px}
   0% {left: ${baseLeft}px}
   20% {transform: rotate(${Math.ceil(Math.random() * 359)}deg)}
@@ -49,14 +51,20 @@ export const Login = () => {
     const inputOne = useRef()
     const inputTwo = useRef()
     const rocket = useRef()
-
+    const error = useSelector((store) => store.game.errorMessage)
+    const userId = useSelector((store) => store.game.user.userId)
     const handleSubmit = (e) => {
         e.preventDefault()
         dispatch(
             UserLogin(email, password)
         )
-        history.push('/game')
     }
+
+    useEffect(() => {
+        if (userId) {
+            history.push('/game')
+        }
+    }, [userId, history])
 
     useEffect(() => {
         setBoxOneLeft(inputOne.current.getBoundingClientRect().left)
@@ -110,13 +118,14 @@ export const Login = () => {
     return (
         <Container>
             <Stars />
-            <Logo />
-            <Form>
+            <Logo text="COME ABOARD" />
+            <Form onSubmit={(e) => handleSubmit(e)}>
                 <Rocket ref={rocket} baseLeft={rocketLeft} baseTop={rocketTop} left={getPos(rocketGoal)}
                     top={getPosTwo(rocketGoal)} startLeft={boxOneLeft} startTop={boxOneTop}
                     onAnimationEnd={() => stationRocket()}>🚀</Rocket>
-                <Input ref={inputOne} onClick={() => getRocket('one')} type="email" placeholder="Email" required onChange={(e) => setEmail(e.target.value)}></Input>
-                <Input ref={inputTwo} onClick={() => getRocket('two')} type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)}></Input>
+                <Input ref={inputOne} onFocus={() => getRocket('one')} type="email" placeholder="Email" required onChange={(e) => setEmail(e.target.value)}></Input>
+                <Input ref={inputTwo} onFocus={() => getRocket('two')} type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)}></Input>
+                {error && error.includes('Invalid') && < ErrorMessage text={error} />}
                 <FormButton type="submit" disabled={!email || !password}>COME ABOARD</FormButton>
                 <FormText>Not a member? <Link to='/' style={{ color: "white" }}>Sign up.</Link></FormText>
             </Form>
