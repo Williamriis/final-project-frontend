@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
 import styled, { keyframes } from 'styled-components'
-import { useHistory, Link } from 'react-router-dom'
-import { UserSignUp } from '../reducers/game'
+import { useDispatch } from 'react-redux'
+import { Link, useHistory } from 'react-router-dom'
 import { Logo } from '../components/Logo'
 import { FormButton, FormText, Input, Form } from '../components/FormComponents'
 import { Stars } from '../components/Stars'
-
+import { UserLogin } from '../reducers/game'
 
 const Container = styled.section`
   display: flex;
@@ -14,8 +13,6 @@ const Container = styled.section`
   align-items: center;
   width: 100%;
 `
-
-
 const Fly = (left, top, baseLeft, baseTop) => keyframes`
 ${console.log(left)}
   0% {top: ${baseTop}px}
@@ -37,30 +34,26 @@ top: ${props => props.startTop + 5}px;
  animation: ${props => Fly(props.left, props.top, props.baseLeft, props.baseTop)} 1s;
  animation-fill-mode: forwards;
 `
-export const Signup = () => {
+export const Login = () => {
     const history = useHistory()
     const dispatch = useDispatch()
-    const [username, setUsername] = useState()
     const [email, setEmail] = useState()
     const [password, setPassword] = useState()
     const [boxOneLeft, setBoxOneLeft] = useState()
     const [boxOneTop, setBoxOneTop] = useState()
     const [boxTwoLeft, setBoxTwoLeft] = useState()
     const [boxTwoTop, setBoxTwoTop] = useState()
-    const [boxThreeLeft, setBoxThreeLeft] = useState()
-    const [boxThreeTop, setBoxThreeTop] = useState()
     const [rocketLeft, setRocketLeft] = useState()
     const [rocketTop, setRocketTop] = useState()
     const [rocketGoal, setRocketGoal] = useState()
     const inputOne = useRef()
     const inputTwo = useRef()
-    const inputThree = useRef()
     const rocket = useRef()
 
     const handleSubmit = (e) => {
         e.preventDefault()
         dispatch(
-            UserSignUp(username, email, password)
+            UserLogin(email, password)
         )
         history.push('/game')
     }
@@ -70,8 +63,6 @@ export const Signup = () => {
         setBoxOneTop(inputOne.current.getBoundingClientRect().top)
         setBoxTwoLeft(inputTwo.current.getBoundingClientRect().left)
         setBoxTwoTop(inputTwo.current.getBoundingClientRect().top)
-        setBoxThreeLeft(inputThree.current.getBoundingClientRect().left)
-        setBoxThreeTop(inputThree.current.getBoundingClientRect().top)
         setRocketLeft(rocket.current.getBoundingClientRect().left)
         setRocketTop(rocket.current.getBoundingClientRect().top)
     }, [rocket])
@@ -83,8 +74,6 @@ export const Signup = () => {
         setBoxOneTop(inputOne.current.getBoundingClientRect().top)
         setBoxTwoLeft(inputTwo.current.getBoundingClientRect().left)
         setBoxTwoTop(inputTwo.current.getBoundingClientRect().top)
-        setBoxThreeLeft(inputThree.current.getBoundingClientRect().left)
-        setBoxThreeTop(inputThree.current.getBoundingClientRect().top)
         setRocketGoal(destination)
     }
 
@@ -94,10 +83,7 @@ export const Signup = () => {
                 return boxOneLeft - 40;
                 break;
             case 'two':
-                return boxTwoLeft + inputTwo.current.getBoundingClientRect().width + 10;
-                break;
-            case 'three':
-                return boxThreeLeft - 40;
+                return boxTwoLeft - 40;
                 break;
             default:
                 return ''
@@ -110,9 +96,6 @@ export const Signup = () => {
                 break;
             case 'two':
                 return boxTwoTop + 5;
-                break;
-            case 'three':
-                return boxThreeTop + 5;
                 break;
             default:
                 return ''
@@ -128,16 +111,15 @@ export const Signup = () => {
         <Container>
             <Stars />
             <Logo />
-            <Form onSubmit={(e) => handleSubmit(e)}>
-                <Input ref={inputOne} onClick={() => getRocket('one')} type="text" placeholder="Username" required onChange={(e) => setUsername(e.target.value)}></Input>
-                <Input ref={inputTwo} onClick={() => getRocket('two')} type="email" placeholder="Email" required onChange={(e) => setEmail(e.target.value)}></Input>
-                <Input ref={inputThree} onClick={() => getRocket('three')} type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)}></Input>
-                <FormButton disabled={!username || !email || !password} type="submit">COME ABOARD</FormButton>
-                <FormText>Already a member? <Link to='/login' style={{ color: "white" }}>Log in.</Link></FormText>
+            <Form>
                 <Rocket ref={rocket} baseLeft={rocketLeft} baseTop={rocketTop} left={getPos(rocketGoal)}
                     top={getPosTwo(rocketGoal)} startLeft={boxOneLeft} startTop={boxOneTop}
                     onAnimationEnd={() => stationRocket()}>🚀</Rocket>
+                <Input ref={inputOne} onClick={() => getRocket('one')} type="email" placeholder="Email" required onChange={(e) => setEmail(e.target.value)}></Input>
+                <Input ref={inputTwo} onClick={() => getRocket('two')} type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)}></Input>
+                <FormButton type="submit" disabled={!email || !password}>COME ABOARD</FormButton>
+                <FormText>Not a member? <Link to='/' style={{ color: "white" }}>Sign up.</Link></FormText>
             </Form>
-        </Container >
+        </Container>
     )
 }

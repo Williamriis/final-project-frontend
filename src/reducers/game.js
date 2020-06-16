@@ -623,6 +623,26 @@ export const UserSignUp = (username, email, password) => {
             })
     }
 }
+export const UserLogin = (username, email, password) => {
+    return (dispatch) => {
+        console.log(username)
+        fetch('http://localhost:8080/signup', {
+            method: 'POST',
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email: email, password: password })
+        })
+            .then((res) => res.json())
+            .then((json) => {
+                if (json.error) {
+                    console.log(json.error)
+                } else {
+                    dispatch(
+                        game.actions.storeUser({ accessToken: json.accessToken, userId: json.id, username: json.username })
+                    )
+                }
+            })
+    }
+}
 export const resetGame = (roomid) => {
     return (dispatch, getState) => {
         const state = getState()

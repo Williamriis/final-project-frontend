@@ -6,6 +6,7 @@ import thunk from 'redux-thunk'
 import { game } from './reducers/game'
 import { SetGame } from './components/Board'
 import { Signup } from './pages/Signup'
+import { Login } from './pages/Login'
 import { ChooseGame } from './pages/ChooseGame'
 import './App.css';
 
@@ -49,6 +50,9 @@ export const App = () => {
         <Switch>
           <Route path='/' exact>
             <Signup />
+          </Route>
+          <Route path='/login' exact>
+            <Login />
           </Route>
           <Route path='/game' exact>
             <ChooseGame />

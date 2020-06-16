@@ -113,6 +113,6 @@
       transform: translateX(-20);
     }
     100% {
-      transform: translateX(300px);
+      transform: translateX(500px);
     }
   }
