@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styled, { keyframes } from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
-import { useParams } from 'react-router-dom'
+import { useParams, useHistory } from 'react-router-dom'
 import { fetchAndStore, setPiece, resetGame, pawnPromotion } from '../reducers/game'
 import { game } from '../reducers/game'
 import { WinModal } from './WinModal'
@@ -42,9 +42,13 @@ const Square = styled.button`
   background-color: ${props => props.user === '#be913a' ? props.index % 2 === 0 && props.row % 2 === 0 ? '#be913a' :
     props.index % 2 !== 0 && props.row % 2 !== 0 ? '#be913a' : '#427c6d' : props.index % 2 === 0 && props.row % 2 === 0 ? '#427c6d' :
       props.index % 2 !== 0 && props.row % 2 !== 0 ? '#427c6d' : '#be913a'};
-border: ${props => props.valid ? '5px solid green' : 'none'};
+border: ${props => props.valid ? '1px solid white' : (props.row === props.lastMove.movedFrom.row && props.column ===
+    props.lastMove.movedFrom.column) || (props.row === props.lastMove.movedTo.row && props.column ===
+      props.lastMove.movedTo.column) ? '3px solid purple' : 'none'};
  //animation: ${props => SpinSquare(props.color)} 2s linear;
  //animation-fill-mode: forwards;
+  filter: brightness(${props => props.valid ? '130%' : '100%'})
+
 `
 
 const PieceImage = styled.img`
@@ -70,13 +74,31 @@ const LostPiece = styled.img`
   width: 30px;
   
 `
-
+const LogoutButton = styled.button`
+position: absolute;
+top: 3%;
+left: 3%;
+color: white;
+background-color: #262626;
+opacity: .7;
+box-shadow: black 3px 3px 8px 3px;
+border-radius: 8px;
+border: none;
+padding: 10px 15px;
+font-family: 'Russo One';
+cursor: pointer;
+&:active {
+  transform: translatey(3px);
+  box-shadow: none;
+}
+`
 
 export const SetGame = () => {
   const [showWinner, setShowWinner] = useState(false)
   const [showGuest, setShowGuest] = useState(false)
   const dispatch = useDispatch()
   const params = useParams()
+  const history = useHistory()
   const squares = useSelector((store) => store.game.squares)
   const activePiece = useSelector((store) => store.game.activePiece)
   const currentTurn = useSelector((store) => store.game.currentTurn)
@@ -90,6 +112,7 @@ export const SetGame = () => {
   const checkCount = useSelector((store) => store.game.checkCount)
   const winner = useSelector((store) => store.game.winner)
   const opponent = useSelector((store) => store.game.opponent)
+  const lastMove = useSelector((store) => store.game.lastMove)
 
   useEffect(() => {
     if (winner) {
@@ -100,17 +123,17 @@ export const SetGame = () => {
   }, [winner])
 
   useEffect(() => {
-    if (opponent && user.username === host.username) {
+    if (opponent.username && user.username === host.username) {
       setShowGuest(true)
     }
-  }, [opponent])
+  }, [opponent.username])
 
   useEffect(() => {
     dispatch(fetchAndStore(params.roomid))
   }, [dispatch])
 
   const movePiece = (baseSquare, targetSquare) => {
-    // document.getElementById('sound').play()
+    //document.getElementById('sound').play()
 
     dispatch(
       setPiece(baseSquare, targetSquare, params.roomid)
@@ -131,10 +154,18 @@ export const SetGame = () => {
     dispatch(pawnPromotion(piece, params.roomid))
   }
 
+  const leaveGame = () => {
+    dispatch(resetGame(params.roomid))
+    dispatch(game.actions.quitGame()
+    )
+    history.push('/game')
+  }
+
   return (
     <Container>
       {squares && squares.length > 0 &&
         <>
+          <LogoutButton onClick={() => leaveGame()}>Quit Game</LogoutButton>
           <WinModal showWinner={showWinner} setShowWinner={setShowWinner} host={host} user={user} opponent={opponent.username} winner={winner} roomid={params.roomid} />
           <PlayerJoinedModal showGuest={showGuest} setShowGuest={setShowGuest} guest={opponent.username} />
           {host && <h1 style={{ color: "white", fontFamily: "Russo One", textShadow: "2px 2px black", fontSize: "30px" }}>{host.username}'s room</h1>}
@@ -153,7 +184,7 @@ export const SetGame = () => {
             {squares.map((square, index) => {
               const imageUrl = square._id === activePiece._id ? require(`../assets/active-${square.piece.image}`) :
                 square.piece && square.piece.image ? require(`../assets/${square.piece.image}`) : ''
-              return <Square color={user.color} key={square._id} index={index} row={square.row} user={user.color}
+              return <Square color={user.color} key={square._id} index={index} row={square.row} column={square.column} user={user.color} lastMove={lastMove}
                 disabled={(activePiece && !square.valid) || (!activePiece && square.piece && square.piece.color && square.piece.color !== currentTurn) || (!activePiece && !square.piece) || (!activePiece && square.piece && !square.piece.type)}
                 valid={square.valid}
                 onClick={() => movePiece(square, square)}>{square.piece && square.piece.image && <PieceImage src={imageUrl} />}</Square>
@@ -170,10 +201,10 @@ export const SetGame = () => {
           </LostPiecesContainer>
 
         </>}
-      {/* {<AudioPlayer id="sound" src={require('../assets/oldman.mp3')} preload controls />} */}
+      {<AudioPlayer id="sound" src={require('../assets/piece-click.wav')} preload controls />}
       {error && < h1 > {error}</h1>}
       {!squares && < h1 > Loading..</h1>}
-      <Stars left={"70%"} top={"50%"} />
+      {/* <Stars left={"70%"} top={"50%"} /> */}
     </Container>
   )
 

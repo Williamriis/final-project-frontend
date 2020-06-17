@@ -17,11 +17,11 @@ const Container = styled.section`
   width: 100%;
   align-items: center;
   justify-content: space-around;
-  height: 50vh;
+  height: 60vh;
 `
 
 const ContentContainer = styled.div`
-  width: 100%;
+  width: 120%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -39,8 +39,8 @@ const NavButton = styled.button`
   border: none;
   animation: ${Bob} 5s ease-in-out infinite;
   animation-delay: ${props => props.delay};
-  width: 200px;
-  height: 200px;
+  width: 270px;
+  height: 270px;
   cursor: pointer;
 `
 const Form = styled.form`
@@ -51,8 +51,8 @@ box-shadow: black 3px 3px 8px 3px;
 border-radius: 8px;
 animation: ${Bob} 5s ease-in-out infinite;
   animation-delay: ${props => props.delay};
-  width: 200px;
-  height: 200px;
+  width: 270px;
+  height: 270px;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -96,47 +96,73 @@ const Rocket = styled.div`
  animation: ${props => Fly(props.left, props.top)} 1s;
  animation-fill-mode: forwards;
 `
+
+const LogoutButton = styled.button`
+position: absolute;
+top: 3%;
+left: 3%;
+color: white;
+background-color: #262626;
+opacity: .7;
+box-shadow: black 3px 3px 8px 3px;
+border-radius: 8px;
+border: none;
+padding: 10px 15px;
+font-family: 'Russo One';
+cursor: pointer;
+&:active {
+  transform: translatey(3px);
+  box-shadow: none;
+}
+`
 export const ChooseGame = () => {
-    const history = useHistory()
-    const dispatch = useDispatch()
-    const roomId = useSelector((store) => store.game.user.userId)
-    const [joinFriend, setJoinFriend] = useState(false)
-    const [friendRoomId, setFriendRoomId] = useState()
-    const [startRoom, setStartRoom] = useState(false)
-    const [moveX, setMoveX] = useState("50%")
-    const [moveY, setMoveY] = useState("50%")
+  const history = useHistory()
+  const dispatch = useDispatch()
+  const roomId = useSelector((store) => store.game.user.userId)
+  const [joinFriend, setJoinFriend] = useState(false)
+  const [friendRoomId, setFriendRoomId] = useState()
+  const [startRoom, setStartRoom] = useState(false)
+  const [moveX, setMoveX] = useState("50%")
+  const [moveY, setMoveY] = useState("50%")
 
-    const goToFriendRoom = (e) => {
-        e.preventDefault()
-        dispatch(game.actions.setRoomId({ roomId: friendRoomId }))
-        history.push(`/game/${friendRoomId}`)
-    }
 
-    const goToMyRoom = () => {
-        dispatch(game.actions.setRoomId({ roomId }))
-        history.push(`/game/${roomId}`)
-    }
-    return (
-        <Container>
-            {/* <Rocket top={moveY} left={moveX}>🚀</Rocket> */}
-            <Stars />
-            <Logo text="PICK DESTINATION" />
-            <ContentContainer>
-                {!startRoom && <NavButton type="button" onClick={() => setStartRoom(true)}>Start my <br></br> own room</NavButton>}
-                {startRoom && <Form>
-                    <JoinMessage>Share my code</JoinMessage>
-                    <JoinMessage>{roomId}</JoinMessage>
-                    <JoinButton onClick={() => goToMyRoom()} >Start</JoinButton>
-                </Form>}
-                {!joinFriend && <NavButton type="button" delay="1s" onClick={() => setJoinFriend(!joinFriend)}>Join <br></br> Friend's Room</NavButton>}
-                {joinFriend &&
-                    <Form onSubmit={(e) => goToFriendRoom(e)} >
-                        <JoinMessage>Enter friend code</JoinMessage>
-                        <Input type="text" required onChange={(e) => setFriendRoomId(e.target.value)}></Input>
-                        <JoinButton disabled={!friendRoomId} type="submit">Join</JoinButton>
-                    </Form>
-                }
-            </ContentContainer>
-        </Container>
-    )
+  const goToFriendRoom = (e) => {
+    e.preventDefault()
+    dispatch(game.actions.setRoomId({ roomId: friendRoomId }))
+    history.push(`/game/${friendRoomId}`)
+  }
+
+  const goToMyRoom = () => {
+    dispatch(game.actions.setRoomId({ roomId }))
+    history.push(`/game/${roomId}`)
+  }
+
+  const logOut = () => {
+    dispatch(game.actions.signout())
+    history.push('/login')
+  }
+  return (
+    <Container>
+      <LogoutButton onClick={() => logOut()}>Logout</LogoutButton>
+      {/* <Rocket top={moveY} left={moveX}>🚀</Rocket> */}
+      <Stars />
+      <Logo text="PICK DESTINATION" />
+      <ContentContainer>
+        {!startRoom && <NavButton type="button" onClick={() => setStartRoom(true)}>Start my <br></br> own room</NavButton>}
+        {startRoom && <Form>
+          <JoinMessage>Share my code</JoinMessage>
+          <JoinMessage>{roomId}</JoinMessage>
+          <JoinButton onClick={() => goToMyRoom()} >Start</JoinButton>
+        </Form>}
+        {!joinFriend && <NavButton type="button" delay="1s" onClick={() => setJoinFriend(!joinFriend)}>Join <br></br> Friend's Room</NavButton>}
+        {joinFriend &&
+          <Form onSubmit={(e) => goToFriendRoom(e)} >
+            <JoinMessage>Enter friend code</JoinMessage>
+            <Input type="text" required onChange={(e) => setFriendRoomId(e.target.value)}></Input>
+            <JoinButton disabled={!friendRoomId} type="submit">Join</JoinButton>
+          </Form>
+        }
+      </ContentContainer>
+    </Container>
+  )
 }

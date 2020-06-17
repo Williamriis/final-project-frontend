@@ -474,10 +474,34 @@ export const game = createSlice({
 
             state.opponent.username = username
             state.opponent.color = color
+        },
 
-
-
-
+        signout: (state) => {
+            state.user.username = false;
+            state.user.userId = false;
+            state.user.accessToken = false;
+            state.squares = [];
+            state.opponent.username = false;
+            state.opponent.color = false;
+            state.host.username = false;
+            state.host.color = "white"
+            state.lostPieces.white = [];
+            state.lostPieces.black = []
+            state.inCheck = false
+            state.checkCount.black = false;
+            state.checkCount.white = false;
+        },
+        quitGame: (state) => {
+            state.squares = [];
+            state.opponent.username = false;
+            state.opponent.color = false;
+            state.host.username = false;
+            state.host.color = "white"
+            state.lostPieces.white = [];
+            state.lostPieces.black = []
+            state.inCheck = false
+            state.checkCount.black = false;
+            state.checkCount.white = false;
         }
     }
 })
@@ -619,6 +643,7 @@ export const UserSignUp = (username, email, password) => {
                     dispatch(
                         game.actions.storeUser({ accessToken: json.accessToken, userId: json.id, username: json.username })
                     )
+                    dispatch(game.actions.errorHandler({ error: false }))
                 }
             })
     }
@@ -638,10 +663,12 @@ export const UserLogin = (email, password) => {
                     dispatch(
                         game.actions.storeUser({ accessToken: json.accessToken, userId: json.userId, username: json.username })
                     )
+                    dispatch(game.actions.errorHandler({ error: false }))
                 }
             })
     }
 }
+
 export const resetGame = (roomid) => {
     return (dispatch, getState) => {
         const state = getState()
