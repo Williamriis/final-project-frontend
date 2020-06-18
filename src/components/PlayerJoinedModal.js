@@ -14,7 +14,7 @@ export const PlayerJoinedModal = ({ showGuest, setShowGuest, guest }) => {
 
     return (
         <Rodal visible={showGuest} onClose={() => setShowGuest(false)}>
-            <Spaceman />
+            {/* <Spaceman /> */}
             <MessageText>{guest} has come aboard!</MessageText>
         </Rodal>
     )
