@@ -37,6 +37,23 @@ const Name = styled.p`
   
 `
 
+const ResignButton = styled.button`
+color: white;
+background-color: #262626;
+opacity: .7;
+box-shadow: black 3px 3px 8px 3px;
+border-radius: 8px;
+border: none;
+padding: 10px 15px;
+font-family: 'Russo One';
+cursor: pointer;
+&:active {
+  transform: translatey(3px);
+  box-shadow: none;
+}
+`
+
+
 const CheckStatus = styled.p`
 //   color: ${props => props.count === 3 ? 'black' : props.count === 2 ? 'orange' : 'red'};
   font-size: 20px;
@@ -44,14 +61,17 @@ const CheckStatus = styled.p`
 `
 
 const Icon = <FontAwesomeIcon className="hand" icon={faHandPointRight} />
-export const PlayerName = ({ player, currentTurn, inCheck, checkCount }) => {
+export const PlayerName = ({ player, currentTurn, inCheck, checkCount, socket }) => {
 
+  const resign = () => {
+    socket.emit('resign', 'I resign')
+  }
 
   return (
     <NameContainer>
       <Hand show={currentTurn === player.color} color={player.color}>{Icon}</Hand>
       <Name color={player.color} check={inCheck === player.color}>{player.username}</Name>
-      {inCheck === player.color && <CheckStatus count={checkCount[player.color]}>: Checkmate in {checkCount[player.color]} moves</CheckStatus>}
+      {inCheck === player.color && <ResignButton onClick={() => resign()}>Resign</ResignButton>}
     </NameContainer>
   )
 }

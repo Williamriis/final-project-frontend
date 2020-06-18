@@ -112,7 +112,6 @@ export const SetGame = () => {
   const myLostPieces = useSelector((store) => store.game.lostPieces[user.color])
   const foesLostPieces = useSelector((store) => store.game.lostPieces[user.color === "white" ? "black" : "white"])
   const promote = useSelector((store) => store.game.promote)
-  const checkCount = useSelector((store) => store.game.checkCount)
   const winner = useSelector((store) => store.game.winner)
   const opponent = useSelector((store) => store.game.opponent)
   const lastMove = useSelector((store) => store.game.lastMove)
@@ -190,7 +189,7 @@ export const SetGame = () => {
             })}
           </LostPiecesContainer>
           {((user.username === host.username && opponent.username) ||
-            (user.username !== host.username)) && <PlayerName player={user.username === host.username ? opponent : host} inCheck={check} currentTurn={currentTurn} checkCount={checkCount} />}
+            (user.username !== host.username)) && <PlayerName player={user.username === host.username ? opponent : host} inCheck={check} currentTurn={currentTurn} socket={socket.current} />}
 
           <Board color={user.color}>
             {squares.map((square, index) => {
@@ -202,7 +201,7 @@ export const SetGame = () => {
                 onClick={() => movePiece(square, square)}>{square.piece && square.piece.image && <PieceImage src={imageUrl} />}</Square>
             })}
           </Board>
-          <PlayerName player={user} inCheck={check} currentTurn={currentTurn} checkCount={checkCount} />
+          <PlayerName player={user} inCheck={check} currentTurn={currentTurn} socket={socket.current} />
           <LostPiecesContainer show={myLostPieces && myLostPieces.length > 0}>
             {myLostPieces && myLostPieces.length > 0 && myLostPieces.map((piece) => {
               const imgUrl = require(`../assets/${piece.image}`)

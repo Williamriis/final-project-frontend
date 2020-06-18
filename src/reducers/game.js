@@ -1,9 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit'
-import io from 'socket.io-client'
-//import { socket } from '../components/socket'
-//import { otherSocket } from '../components/socket'
-
-
 
 const initialState = {
     squares: [
@@ -37,10 +32,6 @@ const initialState = {
         black: []
     },
     promote: false,
-    checkCount: {
-        white: false,
-        black: false
-    },
     winner: false,
 
 
@@ -460,23 +451,11 @@ export const game = createSlice({
 
             }
         },
-        setCheckCount: (state, action) => {
-            const { count, decrement } = action.payload
-            if (decrement) {
-                state.checkCount[state.inCheck] = state.checkCount[state.inCheck] - 1
-            } else if (count === 'reset') {
-                state.checkCount.white = false;
-                state.checkCount.black = false
-            } else {
-                state.checkCount[state.inCheck] = count
-            }
-            if (state.checkCount[state.inCheck] === 0) {
-                state.winner = state.inCheck === 'white' ? 'black' : 'white'
-            }
+        setWinner: (state) => {
+            state.winner = state.inCheck === 'white' ? 'black' : 'white'
         },
         setOpponent: (state, action) => {
             const { username, color } = action.payload
-
             state.opponent.username = username
             state.opponent.color = color
         },
@@ -493,8 +472,6 @@ export const game = createSlice({
             state.lostPieces.white = [];
             state.lostPieces.black = []
             state.inCheck = false
-            state.checkCount.black = false;
-            state.checkCount.white = false;
             state.lastMove = {
                 movedTo: {},
                 movedFrom: {}
@@ -511,8 +488,6 @@ export const game = createSlice({
             state.lostPieces.white = [];
             state.lostPieces.black = []
             state.inCheck = false
-            state.checkCount.black = false;
-            state.checkCount.white = false;
             state.lastMove = {
                 movedTo: {},
                 movedFrom: {}
@@ -588,14 +563,6 @@ export const fetchAndStore = (roomid, socket) => {
                 dispatch(game.actions.setLastMove({ lastMove: data.lastMove }))
 
             }
-            if (data.checkCount === 3) {
-                dispatch(game.actions.setCheckCount({ count: data.checkCount }))
-            } else if (data.checkCount === 'reset') {
-                dispatch(game.actions.setCheckCount({ count: 'reset' }))
-            }
-            if (data.decrementCheckCount) {
-                dispatch(game.actions.setCheckCount({ decrement: true }))
-            }
             dispatch(game.actions.storeSquares({ squares: data.board.board }))
             dispatch(game.actions.newTurn({ currentTurn: data.currentTurn }))
         })
@@ -607,7 +574,6 @@ export const fetchAndStore = (roomid, socket) => {
         socket.on('newGame', data => {
             dispatch(game.actions.storeSquares({ squares: data, reset: true }))
             dispatch(game.actions.setCheck({ check: false }))
-            dispatch(game.actions.setCheckCount({ count: 'reset' }))
             dispatch(game.actions.newTurn({ currentTurn: 'white' }))
         })
     }
@@ -624,40 +590,22 @@ export const setPiece = (baseSquare, targetSquare, roomid, socket) => {
             if (state.game.activePiece.piece.type.includes('king') && targetSquare.piece && targetSquare.piece.type && targetSquare.piece.type.includes('rook') && targetSquare.piece.color === state.game.activePiece.piece.color) {
                 socket.emit('castle', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
             } else if (state.game.activePiece.piece.type.includes('pawn') && (targetSquare.column === state.game.activePiece.column + 1 || targetSquare.column === state.game.activePiece.column - 1) && ((targetSquare.piece && !targetSquare.piece.type) || !targetSquare.piece)) {
-                socket.emit('enPassant', { oldSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid, check: state.game.activePiece.piece.color === state.game.inCheck ? true : false })
+                socket.emit('enPassant', { oldSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid })
             } else if (state.game.activePiece.piece.type.includes('pawn') && ((state.game.activePiece.piece.color === "white" && targetSquare.row === 8 && state.game.lostPieces.white.length > 0)
                 || (state.game.activePiece.piece.color === "black" && targetSquare.row === 1 && state.game.lostPieces.black.length > 0))) {
-                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, promote: true, check: state.game.activePiece.piece.color === state.game.inCheck ? true : false })
+                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, promote: true })
             } else {
                 console.log('moving piece')
-                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, check: state.game.activePiece.piece.color === state.game.inCheck ? true : false })
+                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
             }
-
-            // fetch(`http://localhost:8080/game/${roomid}/movepiece`, {
-            //     method: 'POST',
-            //     headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn })
-            // })
-            //     .then((res) => res.json())
-            //     .then((json) => {
-            //     dispatch(
-            //         game.actions.storeSquares({
-            //             squares: json.board.sort((a, b) => (a.row > b.row) ? 1 :
-            //                 (a.row === b.row) ? (a.column > b.column) ? 1 : -1 : -1)
-            //         })
-            //     )
-            //     dispatch(
-            //         game.actions.newTurn({ currentTurn: json.currentTurn })
-            //     )
-            //})
 
             socket.on('check', data => {
                 dispatch(game.actions.setCheck({ check: data }))
             })
 
-
-
-
+            socket.on('winner', data => {
+                dispatch(game.actions.setWinner())
+            })
 
         }
     }
