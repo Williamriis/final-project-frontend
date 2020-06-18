@@ -35,7 +35,7 @@ cursor: pointer;
 `
 
 
-export const WinModal = ({ showWinner, setShowWinner, user, host, winner, opponent, roomid }) => {
+export const WinModal = ({ showWinner, setShowWinner, user, host, winner, opponent, roomid, socket }) => {
     const history = useHistory()
     const dispatch = useDispatch()
     const leaveRoom = () => {
@@ -43,7 +43,7 @@ export const WinModal = ({ showWinner, setShowWinner, user, host, winner, oppone
     }
 
     const reset = () => {
-        dispatch(resetGame(roomid))
+        dispatch(resetGame(roomid, socket))
     }
 
     const winMessage = () => {
@@ -62,14 +62,23 @@ export const WinModal = ({ showWinner, setShowWinner, user, host, winner, oppone
         }
     }
 
+    const closeModal = () => {
+        setShowWinner(false)
+
+        if (host.left) {
+            dispatch(resetGame(roomid, socket))
+            history.push('/game')
+        }
+    }
+
     return (
-        <Rodal visible={showWinner} onClose={() => setShowWinner(false)}>
+        <Rodal visible={showWinner} onClose={() => closeModal()}>
             <MessageText>{winMessage()}</MessageText>
             <Crown />
-            <ButtonContainer>{user.username === host.username && <Button type="button" onClick={() => reset()}>Play Again</Button>}
-                {user.username !== host.username && <Button type="button" onClick={() => setShowWinner(false)}>Stay in Room</Button>}
-                <Button type="button" onClick={() => leaveRoom()}>Leave Room</Button>
-            </ButtonContainer>
+            {user.username === host.username && <ButtonContainer> <Button type="button" onClick={() => reset()}>Play Again</Button>
+
+                {/* <Button type="button" onClick={() => leaveRoom()}>Leave Room</Button> */}
+            </ButtonContainer>}
 
         </Rodal>
     )

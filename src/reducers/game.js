@@ -3,7 +3,7 @@ import io from 'socket.io-client'
 //import { socket } from '../components/socket'
 //import { otherSocket } from '../components/socket'
 
-let socket = io(`http://localhost:8080/`)
+
 
 const initialState = {
     squares: [
@@ -22,12 +22,16 @@ const initialState = {
     currentTurn: "white",
     host: {
         username: false,
-        color: "white"
+        color: "white",
+        left: false
     },
     errorMessage: false,
     roomid: null,
     inCheck: false,
-    lastMove: false,
+    lastMove: {
+        movedTo: {},
+        movedFrom: {}
+    },
     lostPieces: {
         white: [],
         black: []
@@ -54,12 +58,14 @@ export const game = createSlice({
             state.squares = state.user.color === "white" ? sorted.reverse() : sorted
             state.activePiece = false
             state.errorMessage = false
+            state.host.left = false
+            state.currentTurn = "white"
             if (reset) {
                 state.lostPieces.white = []
                 state.lostPieces.black = []
                 state.promote = false
                 state.winner = false
-                state.lastMove = false
+                state.lastMove = { movedTo: {}, movedFrom: {} }
             }
         },
 
@@ -364,7 +370,6 @@ export const game = createSlice({
 
         storeUser: (state, action) => {
             const { accessToken, userId, username, color } = action.payload
-            console.log('store user exectures')
             state.user.username = username;
             state.user.userId = userId;
             state.user.accessToken = accessToken
@@ -423,10 +428,10 @@ export const game = createSlice({
             const { piece } = action.payload
             if (state.activePiece) {
                 if (state.lastMove.pieceMoved && state.lastMove.pieceMoved.type.includes('pawn')) {
-                    if (state.lastMove.movedFrom.row - state.lastMove.movedTo.row === piece.piece.color === 'white' ? 2 : -2) {
-
+                    if (state.lastMove.movedFrom.row - state.lastMove.movedTo.row === 2 || state.lastMove.movedFrom.row - state.lastMove.movedTo.row === -2) {
+                        console.log(state.lastMove.movedFrom.row - state.lastMove.movedTo.row)
                         if (state.lastMove.movedTo.row === piece.row && (state.lastMove.movedTo.column === piece.column + 1 || state.lastMove.movedTo.column === piece.column - 1)) {
-                            console.log('enPassant')
+                            console.log(state.lastMove.moved)
                             const enPassantSquare = piece.piece.color === 'white' ? state.squares.find((square) => square.column === state.lastMove.movedFrom.column
                                 && (square.column === piece.column + 1 || square.column === piece.column - 1) && square.row === state.lastMove.movedFrom.row - 1)
                                 : state.squares.find((square) => square.column === state.lastMove.movedFrom.column &&
@@ -490,9 +495,15 @@ export const game = createSlice({
             state.inCheck = false
             state.checkCount.black = false;
             state.checkCount.white = false;
+            state.lastMove = {
+                movedTo: {},
+                movedFrom: {}
+            }
+            state.winner = false;
         },
         quitGame: (state) => {
             state.squares = [];
+            state.winner = false;
             state.opponent.username = false;
             state.opponent.color = false;
             state.host.username = false;
@@ -502,13 +513,27 @@ export const game = createSlice({
             state.inCheck = false
             state.checkCount.black = false;
             state.checkCount.white = false;
+            state.lastMove = {
+                movedTo: {},
+                movedFrom: {}
+            }
+        },
+        userLeft: (state) => {
+            state.winner = state.user.color
+            if (state.user.username === state.host.username) {
+                state.opponent.username = false;
+                state.opponent.color = false;
+            } else {
+                console.log('host left')
+                state.host.left = true;
+            }
         }
     }
 })
 
 
 
-export const fetchAndStore = (roomid) => {
+export const fetchAndStore = (roomid, socket) => {
 
     return (dispatch, getState) => {
         const state = getState()
@@ -574,10 +599,21 @@ export const fetchAndStore = (roomid) => {
             dispatch(game.actions.storeSquares({ squares: data.board.board }))
             dispatch(game.actions.newTurn({ currentTurn: data.currentTurn }))
         })
+
+        socket.on('userLeft', data => {
+            dispatch(game.actions.userLeft())
+        })
+
+        socket.on('newGame', data => {
+            dispatch(game.actions.storeSquares({ squares: data, reset: true }))
+            dispatch(game.actions.setCheck({ check: false }))
+            dispatch(game.actions.setCheckCount({ count: 'reset' }))
+            dispatch(game.actions.newTurn({ currentTurn: 'white' }))
+        })
     }
 }
 
-export const setPiece = (baseSquare, targetSquare, roomid) => {
+export const setPiece = (baseSquare, targetSquare, roomid, socket) => {
     return async (dispatch, getState) => {
         const state = getState()
         if (state.game.activePiece === false && baseSquare.piece) {
@@ -593,6 +629,7 @@ export const setPiece = (baseSquare, targetSquare, roomid) => {
                 || (state.game.activePiece.piece.color === "black" && targetSquare.row === 1 && state.game.lostPieces.black.length > 0))) {
                 socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, promote: true, check: state.game.activePiece.piece.color === state.game.inCheck ? true : false })
             } else {
+                console.log('moving piece')
                 socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, check: state.game.activePiece.piece.color === state.game.inCheck ? true : false })
             }
 
@@ -644,6 +681,7 @@ export const UserSignUp = (username, email, password) => {
                         game.actions.storeUser({ accessToken: json.accessToken, userId: json.id, username: json.username })
                     )
                     dispatch(game.actions.errorHandler({ error: false }))
+
                 }
             })
     }
@@ -669,28 +707,16 @@ export const UserLogin = (email, password) => {
     }
 }
 
-export const resetGame = (roomid) => {
+export const resetGame = (roomid, socket) => {
     return (dispatch, getState) => {
-        const state = getState()
-        // fetch(`http://localhost:8080/game/${state.game.user.userId}/reset`)
-        //     .then((res) => res.json())
-        //     .then((json) => {
-        //         dispatch(game.actions.storeSquares({ squares: json, reset: true }))
-        //         dispatch(game.actions.setCheck({ check: false }))
-        //         dispatch(game.actions.newTurn({ currentTurn: 'white' }))
-        //     })
+
         socket.emit('reset', roomid)
 
-        socket.on('newGame', data => {
-            dispatch(game.actions.storeSquares({ squares: data, reset: true }))
-            dispatch(game.actions.setCheck({ check: false }))
-            dispatch(game.actions.setCheckCount({ count: 'reset' }))
-            dispatch(game.actions.newTurn({ currentTurn: 'white' }))
-        })
+
     }
 
 }
-export const pawnPromotion = (piece, roomid) => {
+export const pawnPromotion = (piece, roomid, socket) => {
 
     return (dispatch, getState) => {
         const state = getState()

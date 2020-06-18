@@ -7,14 +7,14 @@ import './stars.css'
 export const Stars = ({ left, top }) => {
 
     return (
-        <div style={{ left: left, top: top }} class="container">
-            <div class="star"></div>
-            <div class="star"></div>
-            <div class="star"></div>
-            <div class="star"></div>
-            <div class="star"></div>
-            <div class="star"></div>
-            <div class="star"></div>
+        <div style={{ left: left, top: top }} className="container">
+            <div className="star"></div>
+            <div className="star"></div>
+            <div className="star"></div>
+            <div className="star"></div>
+            <div className="star"></div>
+            <div className="star"></div>
+            <div className="star"></div>
 
         </div>
     )

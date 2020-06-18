@@ -84,18 +84,6 @@ const JoinButton = styled.button`
       cursor: default;
   }
 `
-const Fly = (left, top) => keyframes`
-  100% {left: ${left}px}
-  100% {top: ${top}px}
-`
-
-const Rocket = styled.div`
- position: absolute;
- font-size: 30px;
- z-index: -5;
- animation: ${props => Fly(props.left, props.top)} 1s;
- animation-fill-mode: forwards;
-`
 
 const LogoutButton = styled.button`
 position: absolute;
@@ -122,8 +110,7 @@ export const ChooseGame = () => {
   const [joinFriend, setJoinFriend] = useState(false)
   const [friendRoomId, setFriendRoomId] = useState()
   const [startRoom, setStartRoom] = useState(false)
-  const [moveX, setMoveX] = useState("50%")
-  const [moveY, setMoveY] = useState("50%")
+
 
 
   const goToFriendRoom = (e) => {
@@ -144,7 +131,6 @@ export const ChooseGame = () => {
   return (
     <Container>
       <LogoutButton onClick={() => logOut()}>Logout</LogoutButton>
-      {/* <Rocket top={moveY} left={moveX}>🚀</Rocket> */}
       <Stars />
       <Logo text="PICK DESTINATION" />
       <ContentContainer>

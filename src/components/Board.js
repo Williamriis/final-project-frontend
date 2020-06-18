@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import styled, { keyframes } from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory } from 'react-router-dom'
@@ -7,8 +7,11 @@ import { game } from '../reducers/game'
 import { WinModal } from './WinModal'
 import { PlayerJoinedModal } from './PlayerJoinedModal'
 import { PlayerName } from './PlayerName'
-import { Flames } from './Fire'
 import { Stars } from './Stars'
+import io from 'socket.io-client'
+
+
+
 
 const SpinBoard = (color) => keyframes`
   0%{transform: rotate(90deg)}
@@ -114,6 +117,18 @@ export const SetGame = () => {
   const opponent = useSelector((store) => store.game.opponent)
   const lastMove = useSelector((store) => store.game.lastMove)
 
+  const socket = useRef()
+
+  useEffect(() => {
+    socket.current = io(`http://localhost:8080/${params.roomid}?id=${params.roomid}`)
+
+    return () => {
+      socket.current.close()
+
+    }
+  }, [])
+
+
   useEffect(() => {
     if (winner) {
       setShowWinner(true)
@@ -129,14 +144,14 @@ export const SetGame = () => {
   }, [opponent.username])
 
   useEffect(() => {
-    dispatch(fetchAndStore(params.roomid))
+    dispatch(fetchAndStore(params.roomid, socket.current))
   }, [dispatch])
 
   const movePiece = (baseSquare, targetSquare) => {
     //document.getElementById('sound').play()
 
     dispatch(
-      setPiece(baseSquare, targetSquare, params.roomid)
+      setPiece(baseSquare, targetSquare, params.roomid, socket.current)
     )
     if (baseSquare.piece && baseSquare.piece.type && baseSquare.piece.type.includes('king') && !baseSquare.piece.moved) {
       dispatch(game.actions.castleValidator({ piece: baseSquare }))
@@ -146,16 +161,13 @@ export const SetGame = () => {
 
 
   }
-  const reset = () => {
-    dispatch(resetGame(params.roomid))
-  }
 
   const promotePawn = (piece) => {
-    dispatch(pawnPromotion(piece, params.roomid))
+    dispatch(pawnPromotion(piece, params.roomid, socket.current))
   }
 
   const leaveGame = () => {
-    dispatch(resetGame(params.roomid))
+    dispatch(resetGame(params.roomid, socket.current))
     dispatch(game.actions.quitGame()
     )
     history.push('/game')
@@ -166,7 +178,7 @@ export const SetGame = () => {
       {squares && squares.length > 0 &&
         <>
           <LogoutButton onClick={() => leaveGame()}>Quit Game</LogoutButton>
-          <WinModal showWinner={showWinner} setShowWinner={setShowWinner} host={host} user={user} opponent={opponent.username} winner={winner} roomid={params.roomid} />
+          <WinModal showWinner={showWinner} setShowWinner={setShowWinner} host={host} user={user} opponent={opponent.username} winner={winner} roomid={params.roomid} socket={socket.current} />
           <PlayerJoinedModal showGuest={showGuest} setShowGuest={setShowGuest} guest={opponent.username} />
           {host && <h1 style={{ color: "white", fontFamily: "Russo One", textShadow: "2px 2px black", fontSize: "30px" }}>{host.username}'s room</h1>}
           <Stars />

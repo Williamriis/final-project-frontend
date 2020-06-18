@@ -27,7 +27,7 @@ const Fly = (left, top, baseLeft, baseTop) => keyframes`
   100% {top: ${top}px}
 `
 
-const Rocket = styled.div`
+const Rocket = styled.span`
  position: absolute;
  font-size: 30px;
  z-index: -5;
@@ -98,13 +98,13 @@ export const Signup = () => {
         switch (field) {
             case 'one':
                 return boxOneLeft - 40;
-                break;
+
             case 'two':
                 return boxTwoLeft + inputTwo.current.getBoundingClientRect().width + 10;
-                break;
+
             case 'three':
                 return boxThreeLeft - 40;
-                break;
+
             default:
                 return ''
         }
@@ -113,13 +113,13 @@ export const Signup = () => {
         switch (field) {
             case 'one':
                 return boxOneTop + 5;
-                break;
+
             case 'two':
                 return boxTwoTop + 5;
-                break;
+
             case 'three':
                 return boxThreeTop + 5;
-                break;
+
             default:
                 return ''
         }
@@ -142,7 +142,7 @@ export const Signup = () => {
                 <Input ref={inputThree} onFocus={() => getRocket('three')} type="password" placeholder="Password" required minLength={8} onChange={(e) => setPassword(e.target.value)}></Input>
                 <FormButton disabled={!username || !email || !password} type="submit">COME ABOARD</FormButton>
                 <FormText>Already a member? <Link to='/login' style={{ color: "white" }}>Log in.</Link></FormText>
-                <Rocket ref={rocket} baseLeft={rocketLeft} baseTop={rocketTop} left={getPos(rocketGoal)}
+                <Rocket role="img" ref={rocket} baseLeft={rocketLeft} baseTop={rocketTop} left={getPos(rocketGoal)}
                     top={getPosTwo(rocketGoal)} startLeft={boxOneLeft} startTop={boxOneTop}
                     onAnimationEnd={() => stationRocket()}>🚀</Rocket>
             </Form>

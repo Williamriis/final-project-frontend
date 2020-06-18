@@ -76,25 +76,6 @@ height: 20px;
 background:white;
 box-shadow: 0px 0px 9px 4px white;
 `
-const Pillar = styled.div`
-  height: 200px;
-  width: 50px;
-  display: flex;
-  background: #666 linear-gradient(to right, rgba(0,0,0,.1), #999);
-`
-
-const Shadow = styled.div`
-  height: 200px;
-  width: 40%;
-  margin:0;
-  background-color: grey;
-`
-const Light = styled.div`
-  height: 200px;
-  width: 60%;
-  margin: 0;
-  background-color: white;
-`
 
 
 export const Flames = () => {
