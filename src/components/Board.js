@@ -96,9 +96,24 @@ cursor: pointer;
 }
 `
 
+const MovementArrow = styled.div`
+  background-color: red;
+  height: 5px;
+  width: ${props => props.height}px;
+  transform: rotateZ(${props => props.angle}deg);
+  position: absolute;
+  top: ${props => props.top}px;
+  left: ${props => props.left}px;
+  z-index: 5;
+`
+
 export const SetGame = () => {
   const [showWinner, setShowWinner] = useState(false)
   const [showGuest, setShowGuest] = useState(false)
+  const [arrowLength, setArrowLength] = useState(0)
+  const [arrowOriginTop, setArrowOriginTop] = useState(0)
+  const [arrowOriginLeft, setArrowOriginLeft] = useState(0)
+  const [arrowAngle, setArrowAngle] = useState(0)
   const dispatch = useDispatch()
   const params = useParams()
   const history = useHistory()
@@ -115,8 +130,77 @@ export const SetGame = () => {
   const winner = useSelector((store) => store.game.winner)
   const opponent = useSelector((store) => store.game.opponent)
   const lastMove = useSelector((store) => store.game.lastMove)
-
+  const playSound = useSelector((store) => store.game.playSound)
   const socket = useRef()
+  const refs = {
+    11: useRef(),
+    12: useRef(),
+    13: useRef(),
+    14: useRef(),
+    15: useRef(),
+    16: useRef(),
+    17: useRef(),
+    18: useRef(),
+    18: useRef(),
+    21: useRef(),
+    22: useRef(),
+    23: useRef(),
+    24: useRef(),
+    25: useRef(),
+    26: useRef(),
+    27: useRef(),
+    28: useRef(),
+    31: useRef(),
+    32: useRef(),
+    33: useRef(),
+    34: useRef(),
+    35: useRef(),
+    36: useRef(),
+    37: useRef(),
+    38: useRef(),
+    41: useRef(),
+    42: useRef(),
+    43: useRef(),
+    44: useRef(),
+    45: useRef(),
+    46: useRef(),
+    47: useRef(),
+    48: useRef(),
+    51: useRef(),
+    52: useRef(),
+    53: useRef(),
+    54: useRef(),
+    55: useRef(),
+    56: useRef(),
+    57: useRef(),
+    58: useRef(),
+    61: useRef(),
+    62: useRef(),
+    63: useRef(),
+    64: useRef(),
+    65: useRef(),
+    66: useRef(),
+    67: useRef(),
+    68: useRef(),
+    71: useRef(),
+    72: useRef(),
+    73: useRef(),
+    74: useRef(),
+    75: useRef(),
+    76: useRef(),
+    77: useRef(),
+    78: useRef(),
+    81: useRef(),
+    82: useRef(),
+    83: useRef(),
+    84: useRef(),
+    85: useRef(),
+    86: useRef(),
+    87: useRef(),
+    88: useRef()
+  }
+
+
 
   useEffect(() => {
     socket.current = io(`https://william-chess-board.herokuapp.com/${params.roomid}?id=${params.roomid}`)
@@ -126,6 +210,50 @@ export const SetGame = () => {
 
     }
   }, [])
+
+  useEffect(() => {
+    if (lastMove.movedFrom.row) {
+      setArrowAngle(0)
+      const movedFrom = refs[lastMove.movedFrom.row.toString() + lastMove.movedFrom.column.toString()].current.getBoundingClientRect()
+      const movedTo = refs[lastMove.movedTo.row.toString() + lastMove.movedTo.column.toString()].current.getBoundingClientRect()
+      const x1 = movedFrom.left + (movedFrom.width / 2)
+      const x2 = movedTo.left + (movedFrom.width / 2)
+      const y1 = movedFrom.top + (movedFrom.width / 2)
+      const y2 = movedTo.top + (movedFrom.width / 2)
+
+      const midX = (x1 + x2) / 2
+      const midY = (y1 + y2) / 2
+
+      const slope = Math.atan2(y1 - y2, x1 - x2)
+      setArrowAngle((slope * 180) / Math.PI)
+
+      const distance = Math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)))
+      setArrowLength(distance)
+      // setArrowLength(Math.abs((movedTo.top - movedFrom.top) + (movedTo.left - movedFrom.left)))
+
+      setArrowOriginTop(midY)
+
+      setArrowOriginLeft(midX - (distance / 2))
+
+
+
+      console.log(arrowLength)
+
+
+
+    }
+
+
+  }, [lastMove])
+
+
+
+  useEffect(() => {
+    if (playSound) {
+      document.getElementById('sound').play()
+      dispatch(game.actions.triggerSound(false))
+    }
+  }, [playSound])
 
   useEffect(() => {
     if (winner) {
@@ -146,7 +274,7 @@ export const SetGame = () => {
   }, [dispatch])
 
   const movePiece = (baseSquare, targetSquare) => {
-    //document.getElementById('sound').play()
+
 
     dispatch(
       setPiece(baseSquare, targetSquare, params.roomid, socket.current)
@@ -179,8 +307,7 @@ export const SetGame = () => {
           <WinModal showWinner={showWinner} setShowWinner={setShowWinner} host={host} user={user} opponent={opponent.username} winner={winner} roomid={params.roomid} socket={socket.current} />
           <PlayerJoinedModal showGuest={showGuest} setShowGuest={setShowGuest} guest={opponent.username} />
           {host && <h1 style={{ color: "white", fontFamily: "Russo One", textShadow: "2px 2px black", fontSize: "30px" }}>{host.username}'s room</h1>}
-          <Stars />
-
+          {/* <Stars /> */}
           <LostPiecesContainer show={foesLostPieces && foesLostPieces.length > 0}>
             {foesLostPieces && foesLostPieces.length > 0 && foesLostPieces.map((piece) => {
               const imgUrl = require(`../assets/${piece.image}`)
@@ -192,13 +319,15 @@ export const SetGame = () => {
 
           <Board color={user.color}>
             {squares.map((square, index) => {
+
               const imageUrl = square._id === activePiece._id ? require(`../assets/active-${square.piece.image}`) :
                 square.piece && square.piece.image ? require(`../assets/${square.piece.image}`) : ''
-              return <Square color={user.color} key={square._id} index={index} row={square.row} column={square.column} user={user.color} lastMove={lastMove}
+              return <Square ref={refs[square.row.toString() + square.column.toString()]} color={user.color} key={square._id} index={index} row={square.row} column={square.column} user={user.color} lastMove={lastMove}
                 disabled={(activePiece && !square.valid) || (!activePiece && square.piece && square.piece.color && square.piece.color !== currentTurn) || (!activePiece && !square.piece) || (!activePiece && square.piece && !square.piece.type)}
                 valid={square.valid}
                 onClick={() => movePiece(square, square)}>{square.piece && square.piece.image && <PieceImage src={imageUrl} />}</Square>
             })}
+            <MovementArrow height={arrowLength} top={arrowOriginTop} left={arrowOriginLeft} angle={arrowAngle}></MovementArrow>
           </Board>
           <PlayerName player={user} inCheck={check} currentTurn={currentTurn} socket={socket.current} />
           <LostPiecesContainer show={myLostPieces && myLostPieces.length > 0}>
@@ -209,7 +338,6 @@ export const SetGame = () => {
                 onClick={() => promotePawn(piece)}><LostPiece src={imgUrl} /></Promotion>
             })}
           </LostPiecesContainer>
-
         </>}
       {<AudioPlayer id="sound" src={require('../assets/piece-click.wav')} preload controls />}
       {error && < h1 > {error}</h1>}

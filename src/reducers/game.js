@@ -33,6 +33,7 @@ const initialState = {
     },
     promote: false,
     winner: false,
+    playSound: false
 
 
 }
@@ -502,6 +503,10 @@ export const game = createSlice({
                 console.log('host left')
                 state.host.left = true;
             }
+        },
+
+        triggerSound: (state, action) => {
+            state.playSound = action.payload
         }
     }
 })
@@ -565,6 +570,7 @@ export const fetchAndStore = (roomid, socket) => {
             }
             dispatch(game.actions.storeSquares({ squares: data.board.board }))
             dispatch(game.actions.newTurn({ currentTurn: data.currentTurn }))
+            dispatch(game.actions.triggerSound(true))
         })
 
         socket.on('userLeft', data => {

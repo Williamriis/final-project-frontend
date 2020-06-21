@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled, { keyframes } from 'styled-components'
 import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
@@ -112,6 +112,11 @@ export const ChooseGame = () => {
   const [startRoom, setStartRoom] = useState(false)
 
 
+  useEffect(() => {
+    if (!roomId) {
+      history.push('/login')
+    }
+  }, [roomId, history])
 
   const goToFriendRoom = (e) => {
     e.preventDefault()
