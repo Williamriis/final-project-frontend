@@ -25,6 +25,11 @@ const ContentContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  @media (max-width: 680px) {
+    flex-direction: column;
+    width: 80%;
+    margin-top: 20px;
+  }
 `
 
 const NavButton = styled.button`
@@ -42,6 +47,11 @@ const NavButton = styled.button`
   width: 270px;
   height: 270px;
   cursor: pointer;
+  @media (max-width: 680px) {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 20px;
+  }
 `
 const Form = styled.form`
 color: white;
@@ -57,17 +67,30 @@ animation: ${Bob} 5s ease-in-out infinite;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
+  @media (max-width: 680px) {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 20px;
+  }
 `
 const JoinMessage = styled.p`
   margin: 0;
   color: white;
   font-family: 'Russo One';
   font-size: 18px;
+  @media (max-width: 680px) {
+    font-size: 13px;
+    text-wrap: wrap;
+  }
 `
 
 const Input = styled.input`
   font-size: 18px;
   border-radius: 8px;
+  @media (max-width: 680px) {
+    font-size: 15px;
+    
+  }
 `
 
 const JoinButton = styled.button`

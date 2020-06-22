@@ -9,6 +9,9 @@ const NameContainer = styled.div`
   position: relative;
   left: -20px;
   margin: 5px 0;
+  @media (max-width: 680px) {
+    left: 0;
+  }
 `
 const Point = keyframes`
 0% {left: -8px};
@@ -24,7 +27,9 @@ const Hand = styled.span`
   top: 2px;
   animation: ${Point} .5s infinite ease-in;
   visibility: ${props => props.show ? 'visible' : 'hidden'};
-  
+  @media (max-width: 680px) {
+    font-size: 20px;
+  }
 `
 
 const Name = styled.p`
@@ -34,7 +39,9 @@ const Name = styled.p`
   font-family: 'Russo One';
   text-shadow: ${props => props.color === 'black' ? '-1px 0 white, 0 1px white, 1px 0 white, 0 -1px white' :
     '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black'};
-  
+   @media (max-width: 680px) {
+     font-size: 20px;
+   }
 `
 
 const ResignButton = styled.button`

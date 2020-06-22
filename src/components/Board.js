@@ -35,6 +35,10 @@ const Board = styled.div`
   box-shadow: black 3px 3px 8px 3px;
  //animation: ${props => SpinBoard(props.color)} 2s linear;
  //animation-fill-mode: forwards;
+ @media (max-width: 680px) {
+  grid-template-columns: 45px 45px 45px 45px 45px 45px 45px 45px;
+  grid-template-rows: 45px 45px 45px 45px 45px 45px 45px 45px;
+ }
 `
 
 const Square = styled.button`

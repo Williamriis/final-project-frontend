@@ -59,7 +59,7 @@ const SubHeader = styled.p`
   text-shadow: black 2px 2px;
 padding: 0 10px;
 @media (max-width: 680px) {
-  font-size: 18px;
+  font-size: 16px;
 }
 `
 
