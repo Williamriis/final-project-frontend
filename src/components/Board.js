@@ -27,8 +27,17 @@ const SpinSquare = (color) => keyframes`
 const Container = styled.section`
   
 `
-
+const RoomName = styled.h1`
+  color: white;
+  font-family: 'Russo One';
+  font-size: 30px;
+  text-shadow: 2px 2px black;
+  @media (max-width: 680px) {
+    font-size: 20px;
+  }
+`
 const Board = styled.div`
+margin-top: 50px;
   display: grid;
   grid-template-columns: 70px 70px 70px 70px 70px 70px 70px 70px;
   grid-template-rows: 70px 70px 70px 70px 70px 70px 70px 70px;
@@ -69,8 +78,11 @@ const AudioPlayer = styled.audio`
 const LostPiecesContainer = styled.div`
   visibility: ${props => props.show ? 'visible' : 'hidden'};
   display: flex;
-  height: 30px;
+  height: 20px;
   flex-wrap: wrap;
+  @media (max-width: 680px) {
+    width: 80%;
+  }
 `
 const Promotion = styled.button`
   background: transparent;
@@ -306,7 +318,7 @@ export const SetGame = () => {
           <LogoutButton onClick={() => leaveGame()}>Quit Game</LogoutButton>
           <WinModal showWinner={showWinner} setShowWinner={setShowWinner} host={host} user={user} opponent={opponent.username} winner={winner} roomid={params.roomid} socket={socket.current} />
           <PlayerJoinedModal showGuest={showGuest} setShowGuest={setShowGuest} guest={opponent.username} />
-          {host && <h1 style={{ color: "white", fontFamily: "Russo One", textShadow: "2px 2px black", fontSize: "30px" }}>{host.username}'s room</h1>}
+          {host && <RoomName>{host.username}'s room</RoomName>}
           {/* <Stars /> */}
           <LostPiecesContainer show={foesLostPieces && foesLostPieces.length > 0}>
             {foesLostPieces && foesLostPieces.length > 0 && foesLostPieces.map((piece) => {

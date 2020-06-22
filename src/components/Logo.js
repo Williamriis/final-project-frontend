@@ -29,7 +29,7 @@ const SubHeaderContainer = styled.div`
   justify-content: center;
   margin-top: -10px;
   @media (max-width: 680px) {
-    margin-top: -5px;
+    margin-top: 0;
   }
 `
 

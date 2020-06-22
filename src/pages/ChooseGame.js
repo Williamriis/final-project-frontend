@@ -18,6 +18,9 @@ const Container = styled.section`
   align-items: center;
   justify-content: space-around;
   height: 60vh;
+  @media (max-width: 680px) {
+    height: 80vh;
+  }
 `
 
 const ContentContainer = styled.div`
