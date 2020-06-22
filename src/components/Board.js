@@ -36,8 +36,8 @@ const Board = styled.div`
  //animation: ${props => SpinBoard(props.color)} 2s linear;
  //animation-fill-mode: forwards;
  @media (max-width: 680px) {
-  grid-template-columns: 45px 45px 45px 45px 45px 45px 45px 45px;
-  grid-template-rows: 45px 45px 45px 45px 45px 45px 45px 45px;
+  grid-template-columns: 42px 42px 42px 42px 42px 42px 42px 42px;
+  grid-template-rows: 42px 42px 42px 42px 42px 42px 42px 42px;
  }
 `
 
@@ -51,7 +51,7 @@ const Square = styled.button`
       props.index % 2 !== 0 && props.row % 2 !== 0 ? '#427c6d' : '#be913a'};
 border: ${props => props.valid ? '1px solid white' : (props.row === props.lastMove.movedFrom.row && props.column ===
     props.lastMove.movedFrom.column) || (props.row === props.lastMove.movedTo.row && props.column ===
-      props.lastMove.movedTo.column) ? '3px solid purple' : 'none'};
+      props.lastMove.movedTo.column) ? '1px solid purple' : 'none'};
  //animation: ${props => SpinSquare(props.color)} 2s linear;
  //animation-fill-mode: forwards;
   filter: brightness(${props => props.valid ? '130%' : '100%'})
@@ -79,7 +79,10 @@ const Promotion = styled.button`
 const LostPiece = styled.img`
   height: 30px;
   width: 30px;
-  
+  @media (max-width: 680px) {
+    height: 20px;
+    width: 20px;
+  }
 `
 const LogoutButton = styled.button`
 position: absolute;

@@ -35,6 +35,9 @@ left: ${props => props.startLeft - 40}px;
 top: ${props => props.startTop + 5}px;
  animation: ${props => Fly(props.left, props.top, props.baseLeft, props.baseTop)} 1s;
  animation-fill-mode: forwards;
+ @media (max-width: 680px) {
+     display: none;
+ }
 `
 export const Signup = () => {
     const history = useHistory()
