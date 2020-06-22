@@ -15,6 +15,9 @@ const Header = styled.p`
   margin: 0;
   text-shadow: black 2px 2px;
   filter: drop-shadow(0 0 6px #699bff);
+  @media (max-width: 680px) {
+    font-size: 35px;
+  }
 `
 
 const SubHeaderContainer = styled.div`
@@ -25,6 +28,9 @@ const SubHeaderContainer = styled.div`
   width: 120%;
   justify-content: center;
   margin-top: -10px;
+  @media (max-width: 680px) {
+    margin-top: -5px;
+  }
 `
 
 const LineContainer = styled.div`
@@ -32,6 +38,7 @@ const LineContainer = styled.div`
   flex-direction: column;
   width: 25%;
   align-items: ${props => props.align};
+  
 `
 const Line = styled.div`
   height: 5px;
@@ -39,7 +46,9 @@ const Line = styled.div`
   background-color: white;
   margin-top: 5px;
   box-shadow: black 1px 1px 1px 1px;
-  
+  @media (max-width: 680px) {
+    height: 3px;
+  }
 `
 
 const SubHeader = styled.p`
@@ -49,6 +58,9 @@ const SubHeader = styled.p`
   margin: 0;
   text-shadow: black 2px 2px;
 padding: 0 10px;
+@media (max-width: 680px) {
+  font-size: 18px;
+}
 `
 
 export const Logo = ({ text }) => {

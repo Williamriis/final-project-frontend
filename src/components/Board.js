@@ -42,7 +42,7 @@ const Square = styled.button`
   padding: 10px;
   width: 100%;
   margin: 0;
-  background-color: ${props => props.user === '#be913a' ? props.index % 2 === 0 && props.row % 2 === 0 ? '#be913a' :
+  background-color: ${props => props.user === 'white' ? props.index % 2 === 0 && props.row % 2 === 0 ? '#be913a' :
     props.index % 2 !== 0 && props.row % 2 !== 0 ? '#be913a' : '#427c6d' : props.index % 2 === 0 && props.row % 2 === 0 ? '#427c6d' :
       props.index % 2 !== 0 && props.row % 2 !== 0 ? '#427c6d' : '#be913a'};
 border: ${props => props.valid ? '1px solid white' : (props.row === props.lastMove.movedFrom.row && props.column ===

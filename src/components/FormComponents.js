@@ -21,6 +21,9 @@ export const Form = styled.form`
   align-items: center;
   margin-top: 35px;
   width: 300px;
+  @media (max-width: 680px) {
+    width: 80%;
+  }
 `
 
 export const Input = styled.input`

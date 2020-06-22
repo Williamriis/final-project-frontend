@@ -5,6 +5,7 @@
       top: 30%;
       left:15%;
       z-index: -5;
+    
   }
   
   .star {
@@ -114,5 +115,11 @@
     }
     100% {
       transform: translateX(500px);
+    }
+  }
+
+  @media (max-width: 668px) {
+    .container {
+      display: none;
     }
   }
