@@ -97,8 +97,8 @@ cursor: pointer;
 `
 
 const MovementArrow = styled.div`
-  background-color: red;
-  height: 5px;
+  background-color: purple;
+  height: 3px;
   width: ${props => props.height}px;
   transform: rotateZ(${props => props.angle}deg);
   position: absolute;
@@ -220,27 +220,21 @@ export const SetGame = () => {
       const x2 = movedTo.left + (movedFrom.width / 2)
       const y1 = movedFrom.top + (movedFrom.width / 2)
       const y2 = movedTo.top + (movedFrom.width / 2)
-
       const midX = (x1 + x2) / 2
       const midY = (y1 + y2) / 2
-
       const slope = Math.atan2(y1 - y2, x1 - x2)
-      setArrowAngle((slope * 180) / Math.PI)
-
       const distance = Math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)))
+
+      setArrowAngle((slope * 180) / Math.PI)
       setArrowLength(distance)
-      // setArrowLength(Math.abs((movedTo.top - movedFrom.top) + (movedTo.left - movedFrom.left)))
-
       setArrowOriginTop(midY)
-
       setArrowOriginLeft(midX - (distance / 2))
 
-
-
-      console.log(arrowLength)
-
-
-
+    } else {
+      setArrowLength(0)
+      setArrowOriginLeft(0)
+      setArrowOriginTop(0)
+      setArrowAngle(0)
     }
 
 
@@ -293,7 +287,6 @@ export const SetGame = () => {
   }
 
   const leaveGame = () => {
-    dispatch(resetGame(params.roomid, socket.current))
     dispatch(game.actions.quitGame()
     )
     history.push('/game')

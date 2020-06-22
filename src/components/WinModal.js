@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import Rodal from 'rodal'
 import 'rodal/lib/rodal.css'
 import { resetGame } from '../reducers/game'
+import { game } from '../reducers/game'
 import { Crown } from './Crown'
 
 const MessageText = styled.p`
@@ -38,11 +39,10 @@ cursor: pointer;
 export const WinModal = ({ showWinner, setShowWinner, user, host, winner, opponent, roomid, socket }) => {
     const history = useHistory()
     const dispatch = useDispatch()
-    const leaveRoom = () => {
-        history.push('/game')
-    }
+
 
     const reset = () => {
+
         dispatch(resetGame(roomid, socket))
     }
 
@@ -63,9 +63,12 @@ export const WinModal = ({ showWinner, setShowWinner, user, host, winner, oppone
     }
 
     const closeModal = () => {
+
         setShowWinner(false)
+        dispatch(resetGame(roomid, socket))
 
         if (host.left) {
+            dispatch(game.actions.quitGame())
             dispatch(resetGame(roomid, socket))
             history.push('/game')
         }

@@ -137,7 +137,7 @@ export const game = createSlice({
                                 (square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece)) {
                                 square.valid = true;
                             } else if (square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece) {
-                                i = -5;
+                                i = -10;
                             }
                         })
                     }
@@ -452,8 +452,14 @@ export const game = createSlice({
 
             }
         },
-        setWinner: (state) => {
-            state.winner = state.inCheck === 'white' ? 'black' : 'white'
+        setWinner: (state, action) => {
+
+            if (action.payload) {
+                state.winner = false
+            } else {
+                state.winner = state.inCheck === 'white' ? 'black' : 'white'
+
+            }
         },
         setOpponent: (state, action) => {
             const { username, color } = action.payload
@@ -662,6 +668,7 @@ export const UserLogin = (email, password) => {
 
 export const resetGame = (roomid, socket) => {
     return (dispatch, getState) => {
+        dispatch(game.actions.setWinner({ winner: 'false' }))
         socket.emit('reset', roomid)
 
     }

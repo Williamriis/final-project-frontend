@@ -1,11 +1,11 @@
 import React from 'react'
 import styled, { keyframes } from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHandPointRight } from '@fortawesome/free-solid-svg-icons'
+import { faHandPointRight, faSadTear } from '@fortawesome/free-solid-svg-icons'
 
 const NameContainer = styled.div`
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   position: relative;
   left: -20px;
   margin: 5px 0;
@@ -21,7 +21,7 @@ const Hand = styled.span`
   font-size: 22px;
   position: relative;
   left: -8px;
-  top: 4px;
+  top: 2px;
   animation: ${Point} .5s infinite ease-in;
   visibility: ${props => props.show ? 'visible' : 'hidden'};
   
@@ -38,14 +38,16 @@ const Name = styled.p`
 `
 
 const ResignButton = styled.button`
-color: white;
-background-color: #262626;
+color: #262626;
+font-size: 18px;
+background-color: white;
 opacity: .7;
-box-shadow: black 3px 3px 8px 3px;
+box-shadow: red 3px 3px 8px 0px;
 border-radius: 8px;
 border: none;
-padding: 10px 15px;
+padding: 2px 8px;
 font-family: 'Russo One';
+margin-left: 12px;
 cursor: pointer;
 &:active {
   transform: translatey(3px);
@@ -54,13 +56,8 @@ cursor: pointer;
 `
 
 
-const CheckStatus = styled.p`
-//   color: ${props => props.count === 3 ? 'black' : props.count === 2 ? 'orange' : 'red'};
-  font-size: 20px;
-  margin: 0;
-`
-
 const Icon = <FontAwesomeIcon className="hand" icon={faHandPointRight} />
+const ResignIcon = <FontAwesomeIcon style={{ fontSize: "18px" }} icon={faSadTear} />
 export const PlayerName = ({ player, currentTurn, inCheck, checkCount, socket }) => {
 
   const resign = () => {
@@ -71,7 +68,7 @@ export const PlayerName = ({ player, currentTurn, inCheck, checkCount, socket })
     <NameContainer>
       <Hand show={currentTurn === player.color} color={player.color}>{Icon}</Hand>
       <Name color={player.color} check={inCheck === player.color}>{player.username}</Name>
-      {inCheck === player.color && <ResignButton onClick={() => resign()}>Resign</ResignButton>}
+      {inCheck === player.color && <ResignButton onClick={() => resign()}>Resign {ResignIcon}</ResignButton>}
     </NameContainer>
   )
 }
