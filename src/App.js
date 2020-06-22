@@ -8,7 +8,6 @@ import { SetGame } from './components/Board'
 import { Signup } from './pages/Signup'
 import { Login } from './pages/Login'
 import { ChooseGame } from './pages/ChooseGame'
-import './App.css';
 
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 

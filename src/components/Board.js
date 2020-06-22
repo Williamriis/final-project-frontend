@@ -2,12 +2,11 @@ import React, { useEffect, useState, useRef } from 'react'
 import styled, { keyframes } from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory } from 'react-router-dom'
-import { fetchAndStore, setPiece, resetGame, pawnPromotion } from '../reducers/game'
+import { fetchAndStore, setPiece, pawnPromotion } from '../reducers/game'
 import { game } from '../reducers/game'
 import { WinModal } from './WinModal'
 import { PlayerJoinedModal } from './PlayerJoinedModal'
 import { PlayerName } from './PlayerName'
-import { Stars } from './Stars'
 import io from 'socket.io-client'
 
 
@@ -160,7 +159,6 @@ export const SetGame = () => {
     16: useRef(),
     17: useRef(),
     18: useRef(),
-    18: useRef(),
     21: useRef(),
     22: useRef(),
     23: useRef(),
@@ -228,7 +226,7 @@ export const SetGame = () => {
       socket.current.close()
 
     }
-  }, [])
+  }, [params.roomid])
 
   useEffect(() => {
     if (lastMove.movedFrom.row) {
@@ -257,16 +255,14 @@ export const SetGame = () => {
     }
 
 
-  }, [lastMove])
-
-
+  }, [lastMove, refs])
 
   useEffect(() => {
     if (playSound) {
       document.getElementById('sound').play()
       dispatch(game.actions.triggerSound(false))
     }
-  }, [playSound])
+  }, [playSound, dispatch])
 
   useEffect(() => {
     if (winner) {
@@ -280,11 +276,11 @@ export const SetGame = () => {
     if (opponent.username && user.username === host.username) {
       setShowGuest(true)
     }
-  }, [opponent.username])
+  }, [opponent.username, host.username, user.username])
 
   useEffect(() => {
     dispatch(fetchAndStore(params.roomid, socket.current))
-  }, [dispatch])
+  }, [dispatch, params.roomid])
 
   const movePiece = (baseSquare, targetSquare) => {
 
@@ -297,8 +293,6 @@ export const SetGame = () => {
     } else if (baseSquare.piece && baseSquare.piece.type && baseSquare.piece.type.includes('pawn')) {
       dispatch(game.actions.enPassantValidator({ piece: baseSquare }))
     }
-
-
   }
 
   const promotePawn = (piece) => {
@@ -316,31 +310,68 @@ export const SetGame = () => {
       {squares && squares.length > 0 &&
         <>
           <LogoutButton onClick={() => leaveGame()}>Quit Game</LogoutButton>
-          <WinModal showWinner={showWinner} setShowWinner={setShowWinner} host={host} user={user} opponent={opponent.username} winner={winner} roomid={params.roomid} socket={socket.current} />
-          <PlayerJoinedModal showGuest={showGuest} setShowGuest={setShowGuest} guest={opponent.username} />
+
+          <WinModal showWinner={showWinner}
+            setShowWinner={setShowWinner}
+            host={host}
+            user={user}
+            opponent={opponent.username}
+            winner={winner}
+            roomid={params.roomid}
+            socket={socket.current} />
+
+          <PlayerJoinedModal showGuest={showGuest}
+            setShowGuest={setShowGuest}
+            guest={opponent.username} />
+
           {host && <RoomName>{host.username}'s room</RoomName>}
+
           <LostPiecesContainer show={foesLostPieces && foesLostPieces.length > 0}>
             {foesLostPieces && foesLostPieces.length > 0 && foesLostPieces.map((piece) => {
               const imgUrl = require(`../assets/${piece.image}`)
               return <Promotion type="button"><LostPiece src={imgUrl} /></Promotion>
             })}
           </LostPiecesContainer>
+
           {((user.username === host.username && opponent.username) ||
-            (user.username !== host.username)) && <PlayerName player={user.username === host.username ? opponent : host} inCheck={check} currentTurn={currentTurn} socket={socket.current} />}
+            (user.username !== host.username)) &&
+            <PlayerName player={user.username === host.username ? opponent : host}
+              inCheck={check}
+              currentTurn={currentTurn}
+              socket={socket.current} />}
 
           <Board color={user.color}>
             {squares.map((square, index) => {
-
               const imageUrl = square._id === activePiece._id ? require(`../assets/active-${square.piece.image}`) :
                 square.piece && square.piece.image ? require(`../assets/${square.piece.image}`) : ''
-              return <Square ref={refs[square.row.toString() + square.column.toString()]} color={user.color} key={square._id} index={index} row={square.row} column={square.column} user={user.color} lastMove={lastMove}
-                disabled={(activePiece && !square.valid) || (!activePiece && square.piece && square.piece.color && square.piece.color !== currentTurn) || (!activePiece && !square.piece) || (!activePiece && square.piece && !square.piece.type)}
+              return <Square ref={refs[square.row.toString() + square.column.toString()]}
+                color={user.color} key={square._id}
+                index={index}
+                row={square.row}
+                column={square.column}
+                user={user.color}
+                lastMove={lastMove}
+                disabled={(activePiece && !square.valid) ||
+                  (!activePiece && square.piece && square.piece.color && square.piece.color !== currentTurn) ||
+                  (!activePiece && !square.piece) || (!activePiece && square.piece && !square.piece.type)}
                 valid={square.valid}
-                onClick={() => movePiece(square, square)}>{square.piece && square.piece.image && <PieceImage src={imageUrl} />}</Square>
+                onClick={() => movePiece(square, square)}>{square.piece && square.piece.image &&
+                  <PieceImage src={imageUrl} />}</Square>
             })}
-            <MovementArrow height={arrowLength} top={arrowOriginTop} left={arrowOriginLeft} angle={arrowAngle}></MovementArrow>
+
+            <MovementArrow height={arrowLength}
+              top={arrowOriginTop}
+              left={arrowOriginLeft}
+              angle={arrowAngle}>
+            </MovementArrow>
+
           </Board>
-          <PlayerName player={user} inCheck={check} currentTurn={currentTurn} socket={socket.current} />
+
+          <PlayerName player={user}
+            inCheck={check}
+            currentTurn={currentTurn}
+            socket={socket.current} />
+
           <LostPiecesContainer show={myLostPieces && myLostPieces.length > 0}>
             {myLostPieces && myLostPieces.length > 0 && myLostPieces.map((piece) => {
               const imgUrl = require(`../assets/${piece.image}`)
@@ -350,9 +381,10 @@ export const SetGame = () => {
             })}
           </LostPiecesContainer>
         </>}
+
       {<AudioPlayer id="sound" src={require('../assets/piece-click.wav')} preload controls />}
-      {error && < h1 > {error}</h1>}
-      {!squares && < h1 > Loading..</h1>}
+      {error && < RoomName > {error}</ RoomName>}
+      {!squares && <RoomName > Loading..</RoomName>}
     </Container>
   )
 

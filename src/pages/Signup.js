@@ -145,7 +145,7 @@ export const Signup = () => {
                 <Input ref={inputThree} onFocus={() => getRocket('three')} type="password" placeholder="Password" required minLength={8} onChange={(e) => setPassword(e.target.value)}></Input>
                 <FormButton disabled={!username || !email || !password} type="submit">COME ABOARD</FormButton>
                 <FormText>Already a member? <Link to='/login' style={{ color: "white" }}>Log in.</Link></FormText>
-                <Rocket role="img" ref={rocket} baseLeft={rocketLeft} baseTop={rocketTop} left={getPos(rocketGoal)}
+                <Rocket role="img" aria-label="rocket" ref={rocket} baseLeft={rocketLeft} baseTop={rocketTop} left={getPos(rocketGoal)}
                     top={getPosTwo(rocketGoal)} startLeft={boxOneLeft} startTop={boxOneTop}
                     onAnimationEnd={() => stationRocket()}>🚀</Rocket>
             </Form>

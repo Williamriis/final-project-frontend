@@ -6,7 +6,6 @@ import { Logo } from '../components/Logo'
 import { FormButton, FormText, Input, Form } from '../components/FormComponents'
 import { Stars } from '../components/Stars'
 import { UserLogin } from '../reducers/game'
-import { game } from '../reducers/game'
 import { ErrorMessage } from '../components/ErrorMessage'
 
 const Container = styled.section`
@@ -56,6 +55,7 @@ export const Login = () => {
     const rocket = useRef()
     const error = useSelector((store) => store.game.errorMessage)
     const userId = useSelector((store) => store.game.user.userId)
+
     const handleSubmit = (e) => {
         e.preventDefault()
         dispatch(
@@ -92,10 +92,10 @@ export const Login = () => {
         switch (field) {
             case 'one':
                 return boxOneLeft - 40;
-                break;
+
             case 'two':
                 return boxTwoLeft - 40;
-                break;
+
             default:
                 return ''
         }
@@ -104,10 +104,10 @@ export const Login = () => {
         switch (field) {
             case 'one':
                 return boxOneTop + 5;
-                break;
+
             case 'two':
                 return boxTwoTop + 5;
-                break;
+
             default:
                 return ''
         }
