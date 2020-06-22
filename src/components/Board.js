@@ -37,7 +37,7 @@ const RoomName = styled.h1`
   }
 `
 const Board = styled.div`
-margin-top: 50px;
+margin-top: 10px;
   display: grid;
   grid-template-columns: 70px 70px 70px 70px 70px 70px 70px 70px;
   grid-template-rows: 70px 70px 70px 70px 70px 70px 70px 70px;
@@ -319,7 +319,6 @@ export const SetGame = () => {
           <WinModal showWinner={showWinner} setShowWinner={setShowWinner} host={host} user={user} opponent={opponent.username} winner={winner} roomid={params.roomid} socket={socket.current} />
           <PlayerJoinedModal showGuest={showGuest} setShowGuest={setShowGuest} guest={opponent.username} />
           {host && <RoomName>{host.username}'s room</RoomName>}
-          {/* <Stars /> */}
           <LostPiecesContainer show={foesLostPieces && foesLostPieces.length > 0}>
             {foesLostPieces && foesLostPieces.length > 0 && foesLostPieces.map((piece) => {
               const imgUrl = require(`../assets/${piece.image}`)
@@ -354,7 +353,6 @@ export const SetGame = () => {
       {<AudioPlayer id="sound" src={require('../assets/piece-click.wav')} preload controls />}
       {error && < h1 > {error}</h1>}
       {!squares && < h1 > Loading..</h1>}
-      {/* <Stars left={"70%"} top={"50%"} /> */}
     </Container>
   )
 
