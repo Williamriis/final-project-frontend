@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   FacebookMessengerShareButton, FacebookMessengerIcon,
-  WhatsappShareButton, WhatsappIcon, ViberShareButton, ViberIcon
+  WhatsappShareButton, WhatsappIcon, EmailShareButton, EmailIcon
 } from 'react-share'
 import { game } from '../reducers/game'
 import { Logo } from '../components/Logo'
@@ -207,7 +207,7 @@ export const ChooseGame = () => {
             <SocialWrapper>
               <FacebookMessengerShareButton appId="745759386166318" url={url}><FacebookMessengerIcon size={32} round={true} /></FacebookMessengerShareButton>
               <WhatsappShareButton url={url}><WhatsappIcon size={32} round={true} /></WhatsappShareButton>
-              <ViberShareButton url={url}><ViberIcon size={32} round={true} /></ViberShareButton>
+              <EmailShareButton url={url}><EmailIcon size={32} round={true} /></EmailShareButton>
             </SocialWrapper>
           </FormPartition>
           <JoinButton padding="5px 40px" onClick={() => goToMyRoom()} >Start</JoinButton>
