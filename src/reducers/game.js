@@ -52,6 +52,7 @@ export const game = createSlice({
             state.errorMessage = false
             state.host.left = false
             state.currentTurn = "white"
+
             if (reset) {
                 state.lostPieces.white = []
                 state.lostPieces.black = []
@@ -400,16 +401,16 @@ export const game = createSlice({
         },
 
         castleValidator: (state, action) => {
-            console.log('castle check')
             const { piece } = action.payload
-            const blankSquaresLeft = state.squares.filter((square) => square.row === piece.row && square.column > 1 && square.column < 5 && !square.piece.type)
-            const blankSquaresRight = state.squares.filter((square) => square.row === piece.row && square.column > 5 && square.column < 8 && !square.piece.type)
+            console.log(piece.column)
+            const blankSquaresLeft = state.squares.filter((square) => square.row === piece.row && square.column > 1 && square.column < 4 && !square.piece.type)
+            const blankSquaresRight = state.squares.filter((square) => square.row === piece.row && square.column > 4 && square.column < 8 && !square.piece.type)
             if (piece.piece.color !== state.inCheck) {
                 state.squares.forEach((square) => {
                     if (square.row === piece.row && square.piece.type && square.piece.type.includes('rook') && !square.piece.moved) {
-                        if (square.column === 1 && blankSquaresLeft.length === 3) {
+                        if (square.column === 1 && blankSquaresLeft.length === 2) {
                             square.valid = true;
-                        } else if (square.column === 8 && blankSquaresRight.length === 2) {
+                        } else if (square.column === 8 && blankSquaresRight.length === 3) {
                             square.valid = true;
                         }
                     }
@@ -421,9 +422,7 @@ export const game = createSlice({
             if (state.activePiece) {
                 if (state.lastMove.pieceMoved && state.lastMove.pieceMoved.type.includes('pawn')) {
                     if (state.lastMove.movedFrom.row - state.lastMove.movedTo.row === 2 || state.lastMove.movedFrom.row - state.lastMove.movedTo.row === -2) {
-                        console.log(state.lastMove.movedFrom.row - state.lastMove.movedTo.row)
                         if (state.lastMove.movedTo.row === piece.row && (state.lastMove.movedTo.column === piece.column + 1 || state.lastMove.movedTo.column === piece.column - 1)) {
-                            console.log(state.lastMove.moved)
                             const enPassantSquare = piece.piece.color === 'white' ? state.squares.find((square) => square.column === state.lastMove.movedFrom.column
                                 && (square.column === piece.column + 1 || square.column === piece.column - 1) && square.row === state.lastMove.movedFrom.row - 1)
                                 : state.squares.find((square) => square.column === state.lastMove.movedFrom.column &&
@@ -523,7 +522,7 @@ export const fetchAndStore = (roomid, socket) => {
 
     return (dispatch, getState) => {
         const state = getState()
-        fetch(`https://william-chess-board.herokuapp.com/game/${roomid}`, {
+        fetch(`http://localhost:8080/game/${roomid}`, {
             headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' }
         })
             .then((res) => res.json())
@@ -607,8 +606,7 @@ export const setPiece = (baseSquare, targetSquare, roomid, socket) => {
                 || (state.game.activePiece.piece.color === "black" && targetSquare.row === 1 && state.game.lostPieces.black.length > 0))) {
                 socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, promote: true })
             } else {
-                console.log('moving piece')
-                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
+                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, check: state.game.inCheck === state.game.activePiece.piece.color ? true : false })
             }
 
             socket.on('check', data => {
@@ -647,7 +645,7 @@ export const UserSignUp = (username, email, password) => {
 }
 export const UserLogin = (email, password) => {
     return (dispatch) => {
-        fetch('https://william-chess-board.herokuapp.com/sessions', {
+        fetch('http://localhost:8080/sessions', {
             method: 'POST',
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ email: email, password: password })

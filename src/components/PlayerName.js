@@ -65,7 +65,7 @@ cursor: pointer;
 
 const Icon = <FontAwesomeIcon className="hand" icon={faHandPointRight} />
 const ResignIcon = <FontAwesomeIcon style={{ fontSize: "18px" }} icon={faSadTear} />
-export const PlayerName = ({ player, currentTurn, inCheck, checkCount, socket }) => {
+export const PlayerName = ({ player, currentTurn, inCheck, socket }) => {
 
   const resign = () => {
     socket.emit('resign', 'I resign')
@@ -75,7 +75,9 @@ export const PlayerName = ({ player, currentTurn, inCheck, checkCount, socket })
     <NameContainer>
       <Hand show={currentTurn === player.color} color={player.color}>{Icon}</Hand>
       <Name color={player.color} check={inCheck === player.color}>{player.username}</Name>
-      {inCheck === player.color && <ResignButton onClick={() => resign()}>Resign {ResignIcon}</ResignButton>}
+      {inCheck === player.color && <ResignButton
+        onClick={() => resign()}
+        disabled={player.color !== inCheck}>Resign {ResignIcon}</ResignButton>}
     </NameContainer>
   )
 }

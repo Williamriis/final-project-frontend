@@ -37,6 +37,7 @@ const RoomName = styled.h1`
 `
 const Board = styled.div`
 margin-top: 10px;
+width: 560px;
   display: grid;
   grid-template-columns: 70px 70px 70px 70px 70px 70px 70px 70px;
   grid-template-rows: 70px 70px 70px 70px 70px 70px 70px 70px;
@@ -44,6 +45,7 @@ margin-top: 10px;
  //animation: ${props => SpinBoard(props.color)} 2s linear;
  //animation-fill-mode: forwards;
  @media (max-width: 680px) {
+   width: 336px;
   grid-template-columns: 42px 42px 42px 42px 42px 42px 42px 42px;
   grid-template-rows: 42px 42px 42px 42px 42px 42px 42px 42px;
  }
@@ -77,10 +79,12 @@ const AudioPlayer = styled.audio`
 const LostPiecesContainer = styled.div`
   visibility: ${props => props.show ? 'visible' : 'hidden'};
   display: flex;
+  margin: 10px;
   height: 20px;
   flex-wrap: wrap;
+  width: 560px;
   @media (max-width: 680px) {
-    width: 80%;
+    width: 336px;
   }
 `
 const Promotion = styled.button`
@@ -88,8 +92,8 @@ const Promotion = styled.button`
   border: none;
 `
 const LostPiece = styled.img`
-  height: 30px;
-  width: 30px;
+  height: 25px;
+  width: 25px;
   @media (max-width: 680px) {
     height: 20px;
     width: 20px;
@@ -123,6 +127,9 @@ const MovementArrow = styled.div`
   top: ${props => props.top}px;
   left: ${props => props.left}px;
   z-index: 5;
+  @media (max-width: 680px) {
+    display: none;
+  }
 `
 
 export const SetGame = () => {
@@ -220,7 +227,7 @@ export const SetGame = () => {
 
 
   useEffect(() => {
-    socket.current = io(`https://william-chess-board.herokuapp.com/${params.roomid}?id=${params.roomid}`)
+    socket.current = io(`http://localhost:8080/${params.roomid}?id=${params.roomid}`)
 
     return () => {
       socket.current.close()
