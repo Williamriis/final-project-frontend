@@ -522,7 +522,7 @@ export const fetchAndStore = (roomid, socket) => {
 
     return (dispatch, getState) => {
         const state = getState()
-        fetch(`http://localhost:8080/game/${roomid}`, {
+        fetch(`https://william-chess-board.herokuapp.com/game/${roomid}`, {
             headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' }
         })
             .then((res) => res.json())

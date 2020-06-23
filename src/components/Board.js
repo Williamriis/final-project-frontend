@@ -79,7 +79,7 @@ const AudioPlayer = styled.audio`
 const LostPiecesContainer = styled.div`
   visibility: ${props => props.show ? 'visible' : 'hidden'};
   display: flex;
-  margin: 10px;
+  margin-bottom: 30px;
   height: 20px;
   flex-wrap: wrap;
   width: 560px;
@@ -227,7 +227,7 @@ export const SetGame = () => {
 
 
   useEffect(() => {
-    socket.current = io(`http://localhost:8080/${params.roomid}?id=${params.roomid}`)
+    socket.current = io(`https://william-chess-board.herokuapp.com/${params.roomid}?id=${params.roomid}`)
 
     return () => {
       socket.current.close()
