@@ -157,7 +157,7 @@ export const ChooseGame = () => {
   const [joinFriend, setJoinFriend] = useState(false)
   const [friendRoomId, setFriendRoomId] = useState()
   const [startRoom, setStartRoom] = useState(false)
-  const url = `https://keen-carson-d69765.netlify.app/game/${roomId}`
+  const url = `https://chessacademy.netlify.app/game/${roomId}`
 
   useEffect(() => {
     if (!roomId) {
