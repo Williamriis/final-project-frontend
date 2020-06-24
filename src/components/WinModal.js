@@ -75,7 +75,7 @@ export const WinModal = ({ showWinner, setShowWinner, user, host, winner, oppone
     }
 
     return (
-        <Rodal width={300} visible={showWinner} onClose={() => closeModal()}>
+        <Rodal width={250} visible={showWinner} onClose={() => closeModal()}>
             <MessageText>{winMessage()}</MessageText>
             <Crown />
             {user.username === host.username && <ButtonContainer> <Button type="button" onClick={() => reset()}>Play Again</Button>

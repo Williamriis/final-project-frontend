@@ -33,7 +33,8 @@ const initialState = {
     },
     promote: false,
     winner: false,
-    playSound: false
+    playSound: false,
+    messages: []
 
 
 }
@@ -483,6 +484,7 @@ export const game = createSlice({
                 movedFrom: {}
             }
             state.winner = false;
+            state.messages = []
         },
         quitGame: (state) => {
             state.squares = [];
@@ -498,6 +500,7 @@ export const game = createSlice({
                 movedTo: {},
                 movedFrom: {}
             }
+            state.messages = []
         },
         userLeft: (state) => {
             state.winner = state.user.color
@@ -512,6 +515,16 @@ export const game = createSlice({
 
         triggerSound: (state, action) => {
             state.playSound = action.payload
+        },
+        addMessage: (state, action) => {
+            const { user, message } = action.payload
+            if (state.messages.length > 0 && state.messages[state.messages.length - 1].message === message && state.messages[state.messages.length - 1].user === user) {
+
+            } else {
+                state.messages.push({ user, message })
+
+            }
+
         }
     }
 })
@@ -522,7 +535,7 @@ export const fetchAndStore = (roomid, socket) => {
 
     return (dispatch, getState) => {
         const state = getState()
-        fetch(`https://william-chess-board.herokuapp.com/game/${roomid}`, {
+        fetch(`http://localhost:8080/game/${roomid}`, {
             headers: { 'Authorization': state.game.user.accessToken, 'Content-Type': 'application/json' }
         })
             .then((res) => res.json())
@@ -587,6 +600,9 @@ export const fetchAndStore = (roomid, socket) => {
             dispatch(game.actions.setCheck({ check: false }))
             dispatch(game.actions.newTurn({ currentTurn: 'white' }))
         })
+        socket.on('newMessage', data => {
+            dispatch(game.actions.addMessage({ message: data.message, user: data.user }))
+        })
     }
 }
 
@@ -645,7 +661,7 @@ export const UserSignUp = (username, email, password) => {
 }
 export const UserLogin = (email, password) => {
     return (dispatch) => {
-        fetch('https://william-chess-board.herokuapp.com/sessions', {
+        fetch('http://localhost:8080/sessions', {
             method: 'POST',
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ email: email, password: password })
@@ -681,3 +697,9 @@ export const pawnPromotion = (piece, roomid, socket) => {
 
 }
 
+export const updateMessages = (socket) => {
+
+    return (dispatch) => {
+
+    }
+}

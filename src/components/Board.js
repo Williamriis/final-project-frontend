@@ -7,6 +7,7 @@ import { game } from '../reducers/game'
 import { WinModal } from './WinModal'
 import { PlayerJoinedModal } from './PlayerJoinedModal'
 import { PlayerName } from './PlayerName'
+import { Chat } from './Chat'
 import io from 'socket.io-client'
 
 
@@ -24,8 +25,19 @@ const SpinSquare = (color) => keyframes`
 
 
 const Container = styled.section`
+  display: flex;
+  justify-content: space-around;
+  width: 100vw;
+  align-items: center;
   
 `
+
+const GameContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  
+`
+
 const RoomName = styled.h1`
   color: white;
   font-family: 'Russo One';
@@ -102,7 +114,7 @@ const LostPiece = styled.img`
 const LogoutButton = styled.button`
 position: absolute;
 top: 3%;
-left: 3%;
+right: 3%;
 color: white;
 background-color: #262626;
 opacity: .7;
@@ -227,7 +239,7 @@ export const SetGame = () => {
 
 
   useEffect(() => {
-    socket.current = io(`https://william-chess-board.herokuapp.com/${params.roomid}?id=${params.roomid}`)
+    socket.current = io(`http://localhost:8080/${params.roomid}?id=${params.roomid}`)
 
     return () => {
       socket.current.close()
@@ -315,7 +327,7 @@ export const SetGame = () => {
   return (
     <Container>
       {squares && squares.length > 0 &&
-        <>
+        <GameContainer>
           <LogoutButton onClick={() => leaveGame()}>Quit Game</LogoutButton>
 
           <WinModal showWinner={showWinner}
@@ -387,11 +399,12 @@ export const SetGame = () => {
                 onClick={() => promotePawn(piece)}><LostPiece src={imgUrl} /></Promotion>
             })}
           </LostPiecesContainer>
-        </>}
+        </GameContainer>}
 
       {<AudioPlayer id="sound" src={require('../assets/piece-click.wav')} preload controls />}
       {error && < RoomName > {error}</ RoomName>}
       {!squares && <RoomName > Loading..</RoomName>}
+      <Chat socket={socket.current} host={host} />
     </Container>
   )
 

@@ -13,7 +13,7 @@ const MessageText = styled.p`
 export const PlayerJoinedModal = ({ showGuest, setShowGuest, guest }) => {
 
     return (
-        <Rodal width={300} visible={showGuest} onClose={() => setShowGuest(false)}>
+        <Rodal width={250} visible={showGuest} onClose={() => setShowGuest(false)}>
             <Spaceman />
             <MessageText>{guest} has come aboard!</MessageText>
         </Rodal>
