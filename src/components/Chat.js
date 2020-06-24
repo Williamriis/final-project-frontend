@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { useSelector } from 'react-redux'
 
 const Container = styled.div`
@@ -9,7 +9,7 @@ const Container = styled.div`
   width: 350px;
   margin-top: 58px;
   height: 100%;
-  @media (max-width: 780px) {
+  @media (max-width: 1024px) {
       display: none;
   }
 `
@@ -24,15 +24,25 @@ const MessageContainer = styled.div`
   margin-bottom: 8px;
 `
 
+const Pop = keyframes`
+  0% {transform: scale(0.1)};
+  100% {transform: scale(1)};
+  
+`
+
 const MessageBubble = styled.p`
   color: ${props => props.host === props.sender ? 'white' : 'white'};
   background-color: ${props => props.host === props.sender ? "#be913a" : '#427c6d'};
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 30px;
+  border-bottom-right-radius: ${props => props.user === props.sender ? '3px' : '30px'};
+  border-bottom-left-radius: ${props => props.user === props.sender ? '30px' : '3px'};
   max-width: 70%;
   align-self: ${props => props.user === props.sender ? 'flex-end' : 'flex-start'};
   margin: 0;
   margin-top: 3px;
+  animation: ${Pop} .3s;
+  animation-fill-mode: forwards;
 `
 const Form = styled.form`
   
