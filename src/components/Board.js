@@ -239,7 +239,7 @@ export const SetGame = () => {
 
 
   useEffect(() => {
-    socket.current = io(`http://localhost:8080/${params.roomid}?id=${params.roomid}`)
+    socket.current = io(`https://william-chess-board.herokuapp.com/${params.roomid}?id=${params.roomid}`)
 
     return () => {
       socket.current.close()
