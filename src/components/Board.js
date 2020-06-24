@@ -8,6 +8,7 @@ import { WinModal } from './WinModal'
 import { PlayerJoinedModal } from './PlayerJoinedModal'
 import { PlayerName } from './PlayerName'
 import { Chat } from './Chat'
+import { FormButton } from './FormComponents'
 import io from 'socket.io-client'
 
 
@@ -35,7 +36,6 @@ const Container = styled.section`
 const GameContainer = styled.div`
   display: flex;
   flex-direction: column;
-  
 `
 
 const RoomName = styled.h1`
@@ -324,6 +324,10 @@ export const SetGame = () => {
     history.push('/game')
   }
 
+  const loginRedirect = () => {
+    history.push('/login')
+  }
+
   return (
     <Container>
       {squares && squares.length > 0 &&
@@ -357,7 +361,8 @@ export const SetGame = () => {
             <PlayerName player={user.username === host.username ? opponent : host}
               inCheck={check}
               currentTurn={currentTurn}
-              socket={socket.current} />}
+              socket={socket.current}
+              user={user.color} />}
 
           <Board color={user.color}>
             {squares.map((square, index) => {
@@ -389,7 +394,8 @@ export const SetGame = () => {
           <PlayerName player={user}
             inCheck={check}
             currentTurn={currentTurn}
-            socket={socket.current} />
+            socket={socket.current}
+            user={user.color} />
 
           <LostPiecesContainer show={myLostPieces && myLostPieces.length > 0}>
             {myLostPieces && myLostPieces.length > 0 && myLostPieces.map((piece) => {
@@ -402,9 +408,15 @@ export const SetGame = () => {
         </GameContainer>}
 
       {<AudioPlayer id="sound" src={require('../assets/piece-click.wav')} preload controls />}
-      {error && < RoomName > {error}</ RoomName>}
+      {error &&
+
+        <GameContainer>
+          < RoomName > {error}</ RoomName>
+          <FormButton onClick={() => loginRedirect()}>COME ABOARD</FormButton>
+        </GameContainer>}
+
       {!squares && <RoomName > Loading..</RoomName>}
-      <Chat socket={socket.current} host={host} />
+      {!error && <Chat socket={socket.current} host={host} />}
     </Container>
   )
 
