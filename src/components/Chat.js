@@ -67,30 +67,32 @@ const MessageButton = styled.button`
 `
 
 export const Chat = ({ socket, host }) => {
-    const [message, setMessage] = useState()
-    const chatHistory = useSelector((store) => store.game.messages)
-    const user = useSelector((store) => store.game.user.username)
-    const handleSubmit = (e) => {
-        console.log(message.length)
-        e.preventDefault()
-        socket.emit('message', { user, message })
-        setMessage('')
+  const [message, setMessage] = useState()
+  const chatHistory = useSelector((store) => store.game.messages)
+  const user = useSelector((store) => store.game.user.username)
+  const handleSubmit = (e) => {
+    console.log(message.length)
+    e.preventDefault()
+    socket.emit('message', { user, message })
+    setMessage('')
 
-    }
+  }
 
-    return (
+  return (
 
-        <Container>
-            <MessageContainer>
-                {chatHistory.map((message) => {
-                    return <MessageBubble host={host.username} user={user} sender={message.user}>{message.message}</MessageBubble>
-                })}
-            </MessageContainer>
+    <Container>
+      <MessageContainer>
+        {chatHistory.map((message) => {
+          return <MessageBubble host={host.username} user={user} sender={message.user}>{message.message}</MessageBubble>
+        })}
+      </MessageContainer>
 
-            <Form onSubmit={(e) => handleSubmit(e)}>
-                <MessageInput type="text" maxLength={80} value={message} onChange={(e) => setMessage(e.target.value)}></MessageInput>
-                <MessageButton type="submit">Send</MessageButton>
-            </Form>
-        </Container>
-    )
+      <Form onSubmit={(e) => handleSubmit(e)}>
+        <MessageInput type="text" maxLength={80} value={message} onChange={(e) => setMessage(e.target.value)}></MessageInput>
+        <MessageButton
+          type="submit"
+          disabled={!message}>Send</MessageButton>
+      </Form>
+    </Container>
+  )
 }
