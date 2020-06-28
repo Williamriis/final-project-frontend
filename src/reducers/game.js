@@ -110,7 +110,6 @@ export const game = createSlice({
                 if (baseSquare.piece.color === 'white') {
                     let i = 1;
                     for (i = 1; i <= 2; i++) {
-                        // eslint-disable-next-line no-loop-func
                         state.squares.forEach((square) => {
                             if (baseSquare._id === square._id) {
                                 square.valid = true;
@@ -512,7 +511,7 @@ export const game = createSlice({
                 state.opponent.username = false;
                 state.opponent.color = false;
             } else {
-                console.log('host left')
+
                 state.host.left = true;
             }
         },
@@ -530,11 +529,12 @@ export const game = createSlice({
             }
 
         },
-        falsifyTargetSquare: (state, action) => {
-            //FIXES GLITCH CAUSED BY DOUBLE-CLICKING TARGET SQUARE BEFORE SOCKET EMITS 
-            const { targetSquare } = action.payload
-            const movedToSquare = state.squares.find((square) => square._id === targetSquare._id)
-            movedToSquare.valid = false
+        makeValidFalse: (state) => {
+
+            state.squares.forEach((square) => {
+                square.valid = false
+            })
+
         }
     }
 })
@@ -624,7 +624,10 @@ export const setPiece = (baseSquare, targetSquare, roomid, socket) => {
         } else if (state.game.activePiece && state.game.activePiece._id === targetSquare._id) {
             dispatch(game.actions.resetPiece())
         } else if (state.game.activePiece) {
-            dispatch(game.actions.falsifyTargetSquare({ targetSquare }))
+
+            //FIXES GLITCH CAUSED BY DOUBLE-CLICKING TARGET SQUARE BEFORE SOCKET EMITS 
+            dispatch(game.actions.makeValidFalse())
+
             if (state.game.activePiece.piece.type.includes('king') && targetSquare.piece && targetSquare.piece.type && targetSquare.piece.type.includes('rook') && targetSquare.piece.color === state.game.activePiece.piece.color) {
                 socket.emit('castle', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
             } else if (state.game.activePiece.piece.type.includes('pawn') && (targetSquare.column === state.game.activePiece.column + 1 || targetSquare.column === state.game.activePiece.column - 1) && ((targetSquare.piece && !targetSquare.piece.type) || !targetSquare.piece)) {
@@ -651,7 +654,6 @@ export const setPiece = (baseSquare, targetSquare, roomid, socket) => {
 
 export const UserSignUp = (username, email, password) => {
     return (dispatch) => {
-        console.log(username)
         fetch('https://william-chess-board.herokuapp.com/signup', {
             method: 'POST',
             headers: { "content-type": "application/json" },
@@ -700,17 +702,9 @@ export const resetGame = (roomid, socket) => {
 
 }
 export const pawnPromotion = (piece, roomid, socket) => {
-
     return (dispatch, getState) => {
         const state = getState()
         socket.emit('pawnPromotion', { piece, targetSquare: state.game.lastMove.movedTo, roomid, color: state.game.currentTurn })
     }
 
-}
-
-export const updateMessages = (socket) => {
-
-    return (dispatch) => {
-
-    }
 }

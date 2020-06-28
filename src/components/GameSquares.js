@@ -112,7 +112,8 @@ export const GameSquares = ({ squares, activePiece, socket, user, lastMove, curr
             {squares.map((square, index) => {
                 const imageUrl = square._id === activePiece._id ? require(`../assets/active-${square.piece.image}`) :
                     square.piece && square.piece.image ? require(`../assets/${square.piece.image}`) : ''
-                return <Square ref={refs[square.row.toString() + square.column.toString()]}
+                return <Square
+                    ref={refs[square.row.toString() + square.column.toString()]}
                     color={user.color} key={square._id}
                     index={index}
                     row={square.row}
@@ -124,8 +125,10 @@ export const GameSquares = ({ squares, activePiece, socket, user, lastMove, curr
                         (!activePiece && square.piece && square.piece.color && square.piece.color !== currentTurn) ||
                         (!activePiece && !square.piece) || (!activePiece && square.piece && !square.piece.type)}
                     valid={square.valid}
-                    onClick={() => movePiece(square, square)}>{square.piece && square.piece.image &&
-                        <PieceImage src={imageUrl} />}</Square>
+                    onClick={() => movePiece(square, square)}>
+                    {square.piece && square.piece.image &&
+                        <PieceImage src={imageUrl} />}
+                </Square>
             })}
             <MovementArrow lastMove={lastMove} refs={refs} />
         </>

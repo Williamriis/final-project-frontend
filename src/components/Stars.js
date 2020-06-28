@@ -1,9 +1,6 @@
 import React from 'react'
 import './stars.css'
 
-
-
-
 export const Stars = ({ left, top }) => {
 
     return (
@@ -15,7 +12,6 @@ export const Stars = ({ left, top }) => {
             <div className="star"></div>
             <div className="star"></div>
             <div className="star"></div>
-
         </div>
     )
 }
