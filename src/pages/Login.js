@@ -6,7 +6,7 @@ import { Logo } from '../components/Logo'
 import { FormButton, FormText, Input, Form } from '../components/FormComponents'
 import { Stars } from '../components/Stars'
 import { UserLogin } from '../reducers/game'
-import { ErrorMessage } from '../components/ErrorMessage'
+import { FormErrorMessage } from '../components/FormErrorMessage'
 
 const Container = styled.section`
   display: flex;
@@ -128,7 +128,7 @@ export const Login = () => {
                     onAnimationEnd={() => stationRocket()}>🚀</Rocket>
                 <Input ref={inputOne} onFocus={() => getRocket('one')} type="email" placeholder="Email" required onChange={(e) => setEmail(e.target.value)}></Input>
                 <Input ref={inputTwo} onFocus={() => getRocket('two')} type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)}></Input>
-                {error && error.includes('Invalid') && < ErrorMessage text={error} />}
+                {error && error.includes('Invalid') && < FormErrorMessage text={error} />}
                 <FormButton type="submit" disabled={!email || !password}>COME ABOARD</FormButton>
                 <FormText>Not a member? <Link to='/' style={{ color: "white" }}>Sign up.</Link></FormText>
             </Form>

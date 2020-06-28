@@ -183,8 +183,7 @@ export const ChooseGame = () => {
 
   const copyRoomId = () => {
     document.getElementById('roomId').select()
-    document.
-      execCommand('copy')
+    document.execCommand('copy')
   }
   return (
     <Container>
@@ -196,7 +195,6 @@ export const ChooseGame = () => {
         {startRoom && <Form>
           <FormPartition>
             <JoinMessage>Share my code:</JoinMessage>
-            {/* <JoinMessage>{roomId}</JoinMessage> */}
             <CodeShareWrapper>
               <Input id="roomId" defaultValue={roomId}></Input>
               <JoinButton padding="5px 8px" type="button" onClick={() => copyRoomId()}>Copy</JoinButton>

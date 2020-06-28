@@ -75,9 +75,11 @@ export const PlayerName = ({ player, currentTurn, inCheck, socket, user }) => {
     <NameContainer>
       <Hand show={currentTurn === player.color} color={player.color}>{Icon}</Hand>
       <Name color={player.color} check={inCheck === player.color}>{player.username}</Name>
-      {inCheck === player.color && <ResignButton
-        onClick={() => resign()}
-        disabled={user !== inCheck}>Resign {ResignIcon}</ResignButton>}
+      {inCheck === player.color &&
+        <ResignButton
+          onClick={() => resign()}
+          disabled={user !== inCheck}>Resign {ResignIcon}
+        </ResignButton>}
     </NameContainer>
   )
 }

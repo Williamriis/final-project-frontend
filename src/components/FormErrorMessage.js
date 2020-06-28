@@ -18,7 +18,7 @@ margin-left: 10px;
 `
 
 
-export const ErrorMessage = ({ text }) => {
+export const FormErrorMessage = ({ text }) => {
 
     return (
         <ErrorContainer>

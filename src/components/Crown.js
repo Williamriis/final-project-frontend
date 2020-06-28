@@ -11,7 +11,6 @@ export const Crown = () => {
             }}
             width='150px'
             height='150px'
-
             autoPlay
         />
     )

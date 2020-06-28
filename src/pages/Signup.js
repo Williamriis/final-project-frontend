@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/accessible-emoji */
 import React, { useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled, { keyframes } from 'styled-components'
@@ -6,7 +7,7 @@ import { UserSignUp } from '../reducers/game'
 import { Logo } from '../components/Logo'
 import { FormButton, FormText, Input, Form } from '../components/FormComponents'
 import { Stars } from '../components/Stars'
-import { ErrorMessage } from '../components/ErrorMessage'
+import { FormErrorMessage } from '../components/FormErrorMessage'
 
 const Container = styled.section`
   display: flex;
@@ -22,7 +23,6 @@ const Fly = (left, top, baseLeft, baseTop) => keyframes`
   20% {transform: rotate(${Math.ceil(Math.random() * 359)}deg)}
   40% {transform: rotate(${Math.ceil(Math.random() * 359)}deg)}
   60% {transform: rotate(${Math.ceil(Math.random() * 359)}deg)}
-//   80% {transform: rotate(${Math.ceil(Math.random() * 359)}deg)}
   100% {left: ${left}px}
   100% {top: ${top}px}
 `
@@ -139,9 +139,9 @@ export const Signup = () => {
             <Logo text="COME ABOARD" />
             <Form onSubmit={(e) => handleSubmit(e)}>
                 <Input ref={inputOne} onFocus={() => getRocket('one')} type="text" placeholder="Username" required minLength={3} maxLength={20} onChange={(e) => setUsername(e.target.value)}></Input>
-                {error && error.includes('Username') && <ErrorMessage text={error} />}
+                {error && error.includes('Username') && <FormErrorMessage text={error} />}
                 <Input ref={inputTwo} onFocus={() => getRocket('two')} type="email" placeholder="Email" required onChange={(e) => setEmail(e.target.value)}></Input>
-                {error && error.includes('Email') && <ErrorMessage text={error} />}
+                {error && error.includes('Email') && <FormErrorMessage text={error} />}
                 <Input ref={inputThree} onFocus={() => getRocket('three')} type="password" placeholder="Password" required minLength={8} onChange={(e) => setPassword(e.target.value)}></Input>
                 <FormButton disabled={!username || !email || !password} type="submit">COME ABOARD</FormButton>
                 <FormText>Already a member? <Link to='/login' style={{ color: "white" }}>Log in.</Link></FormText>

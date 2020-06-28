@@ -1,3 +1,4 @@
+/* eslint-disable no-loop-func */
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
@@ -109,6 +110,7 @@ export const game = createSlice({
                 if (baseSquare.piece.color === 'white') {
                     let i = 1;
                     for (i = 1; i <= 2; i++) {
+                        // eslint-disable-next-line no-loop-func
                         state.squares.forEach((square) => {
                             if (baseSquare._id === square._id) {
                                 square.valid = true;
@@ -168,7 +170,9 @@ export const game = createSlice({
                         state.squares.forEach((square) => {
                             if ((baseSquare._id === square._id) ||
                                 (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y)) {
-                                if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
+                                if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece &&
+                                    square.piece.color &&
+                                    square.piece.color !== baseSquare.piece.color) {
                                     square.valid = true;
                                     scale = 9;
                                 } else if ((square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && !square.piece) ||
@@ -261,6 +265,7 @@ export const game = createSlice({
                     for (scale = 1; scale <= 8; scale++) {
                         const offset = { x: dir.x * scale, y: dir.y * scale }
                         if (dir.type === "straight") {
+
                             state.squares.forEach((square) => {
                                 if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x) ||
                                     (square.row === baseSquare.row && square.column === baseSquare.column + offset.y)) {
@@ -403,7 +408,6 @@ export const game = createSlice({
 
         castleValidator: (state, action) => {
             const { piece } = action.payload
-            console.log(piece.column)
             const blankSquaresLeft = state.squares.filter((square) => square.row === piece.row && square.column > 1 && square.column < 4 && !square.piece.type)
             const blankSquaresRight = state.squares.filter((square) => square.row === piece.row && square.column > 4 && square.column < 8 && !square.piece.type)
             if (piece.piece.color !== state.inCheck) {
@@ -525,6 +529,12 @@ export const game = createSlice({
 
             }
 
+        },
+        falsifyTargetSquare: (state, action) => {
+            //FIXES GLITCH CAUSED BY DOUBLE-CLICKING TARGET SQUARE BEFORE SOCKET EMITS 
+            const { targetSquare } = action.payload
+            const movedToSquare = state.squares.find((square) => square._id === targetSquare._id)
+            movedToSquare.valid = false
         }
     }
 })
@@ -614,6 +624,7 @@ export const setPiece = (baseSquare, targetSquare, roomid, socket) => {
         } else if (state.game.activePiece && state.game.activePiece._id === targetSquare._id) {
             dispatch(game.actions.resetPiece())
         } else if (state.game.activePiece) {
+            dispatch(game.actions.falsifyTargetSquare({ targetSquare }))
             if (state.game.activePiece.piece.type.includes('king') && targetSquare.piece && targetSquare.piece.type && targetSquare.piece.type.includes('rook') && targetSquare.piece.color === state.game.activePiece.piece.color) {
                 socket.emit('castle', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
             } else if (state.game.activePiece.piece.type.includes('pawn') && (targetSquare.column === state.game.activePiece.column + 1 || targetSquare.column === state.game.activePiece.column - 1) && ((targetSquare.piece && !targetSquare.piece.type) || !targetSquare.piece)) {

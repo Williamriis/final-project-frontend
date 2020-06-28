@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import styled, { keyframes } from 'styled-components'
+import styled from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory } from 'react-router-dom'
 import { fetchAndStore, setPiece, pawnPromotion } from '../reducers/game'
@@ -10,20 +10,7 @@ import { PlayerName } from './PlayerName'
 import { Chat } from './Chat'
 import { FormButton } from './FormComponents'
 import io from 'socket.io-client'
-
-
-
-
-const SpinBoard = (color) => keyframes`
-  0%{transform: rotate(90deg)}
-  100% {transform: rotate(${color === 'white' ? '0deg' : '0deg'})}
-`
-
-const SpinSquare = (color) => keyframes`
-0%{transform: rotate(270deg)}
-100% {transform: rotate(${color === 'white' ? '0deg' : '0deg'})}
-`
-
+import { MovementArrow } from './MovementArrow'
 
 const Container = styled.section`
   display: flex;
@@ -54,8 +41,7 @@ width: 560px;
   grid-template-columns: 70px 70px 70px 70px 70px 70px 70px 70px;
   grid-template-rows: 70px 70px 70px 70px 70px 70px 70px 70px;
   box-shadow: black 3px 3px 8px 3px;
- //animation: ${props => SpinBoard(props.color)} 2s linear;
- //animation-fill-mode: forwards;
+ 
  @media (max-width: 680px) {
    width: 336px;
   grid-template-columns: 42px 42px 42px 42px 42px 42px 42px 42px;
@@ -74,8 +60,6 @@ const Square = styled.button`
 border: ${props => props.valid ? '1px solid white' : (props.row === props.lastMove.movedFrom.row && props.column ===
     props.lastMove.movedFrom.column) || (props.row === props.lastMove.movedTo.row && props.column ===
       props.lastMove.movedTo.column) ? '1px solid purple' : 'none'};
- //animation: ${props => SpinSquare(props.color)} 2s linear;
- //animation-fill-mode: forwards;
   filter: brightness(${props => props.valid ? '130%' : '100%'})
 
 `
@@ -130,27 +114,9 @@ cursor: pointer;
 }
 `
 
-const MovementArrow = styled.div`
-  background-color: purple;
-  height: 3px;
-  width: ${props => props.height}px;
-  transform: rotateZ(${props => props.angle}deg);
-  position: absolute;
-  top: ${props => props.top}px;
-  left: ${props => props.left}px;
-  z-index: 5;
-  @media (max-width: 680px) {
-    display: none;
-  }
-`
-
 export const SetGame = () => {
   const [showWinner, setShowWinner] = useState(false)
   const [showGuest, setShowGuest] = useState(false)
-  const [arrowLength, setArrowLength] = useState(0)
-  const [arrowOriginTop, setArrowOriginTop] = useState(0)
-  const [arrowOriginLeft, setArrowOriginLeft] = useState(0)
-  const [arrowAngle, setArrowAngle] = useState(0)
   const dispatch = useDispatch()
   const params = useParams()
   const history = useHistory()
@@ -236,8 +202,6 @@ export const SetGame = () => {
     88: useRef()
   }
 
-
-
   useEffect(() => {
     socket.current = io(`https://william-chess-board.herokuapp.com/${params.roomid}?id=${params.roomid}`)
 
@@ -247,34 +211,6 @@ export const SetGame = () => {
     }
   }, [params.roomid])
 
-  useEffect(() => {
-    if (lastMove.movedFrom.row) {
-      setArrowAngle(0)
-      const movedFrom = refs[lastMove.movedFrom.row.toString() + lastMove.movedFrom.column.toString()].current.getBoundingClientRect()
-      const movedTo = refs[lastMove.movedTo.row.toString() + lastMove.movedTo.column.toString()].current.getBoundingClientRect()
-      const x1 = movedFrom.left + (movedFrom.width / 2)
-      const x2 = movedTo.left + (movedFrom.width / 2)
-      const y1 = movedFrom.top + (movedFrom.width / 2)
-      const y2 = movedTo.top + (movedFrom.width / 2)
-      const midX = (x1 + x2) / 2
-      const midY = (y1 + y2) / 2
-      const slope = Math.atan2(y1 - y2, x1 - x2)
-      const distance = Math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)))
-
-      setArrowAngle((slope * 180) / Math.PI)
-      setArrowLength(distance)
-      setArrowOriginTop(midY)
-      setArrowOriginLeft(midX - (distance / 2))
-
-    } else {
-      setArrowLength(0)
-      setArrowOriginLeft(0)
-      setArrowOriginTop(0)
-      setArrowAngle(0)
-    }
-
-
-  }, [lastMove, refs])
 
   useEffect(() => {
     if (playSound) {
@@ -302,7 +238,6 @@ export const SetGame = () => {
   }, [dispatch, params.roomid])
 
   const movePiece = (baseSquare, targetSquare) => {
-
 
     dispatch(
       setPiece(baseSquare, targetSquare, params.roomid, socket.current)
@@ -383,11 +318,7 @@ export const SetGame = () => {
                   <PieceImage src={imageUrl} />}</Square>
             })}
 
-            <MovementArrow height={arrowLength}
-              top={arrowOriginTop}
-              left={arrowOriginLeft}
-              angle={arrowAngle}>
-            </MovementArrow>
+            <MovementArrow lastMove={lastMove} refs={refs} />
 
           </Board>
 
@@ -405,9 +336,11 @@ export const SetGame = () => {
                 onClick={() => promotePawn(piece)}><LostPiece src={imgUrl} /></Promotion>
             })}
           </LostPiecesContainer>
+
         </GameContainer>}
 
       {<AudioPlayer id="sound" src={require('../assets/piece-click.wav')} preload controls />}
+
       {error &&
 
         <GameContainer>

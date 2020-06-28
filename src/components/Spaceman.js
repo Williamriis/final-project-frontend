@@ -11,7 +11,6 @@ export const Spaceman = () => {
             }}
             width='200px'
             height='200px'
-
             autoPlay
         />
     )
