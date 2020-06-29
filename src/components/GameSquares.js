@@ -123,6 +123,7 @@ export const GameSquares = ({ squares, activePiece, socket, user, lastMove, curr
                     disabled=
                     {(activePiece && !square.valid) ||
                         (!activePiece && square.piece && square.piece.color && square.piece.color !== currentTurn) ||
+                        (!activePiece && square.piece && square.piece.color && square.piece.color !== user.color) ||
                         (!activePiece && !square.piece) || (!activePiece && square.piece && !square.piece.type)}
                     valid={square.valid}
                     onClick={() => movePiece(square, square)}>
