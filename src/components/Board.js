@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import styled from 'styled-components'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useHistory } from 'react-router-dom'
-import { fetchAndStore, pawnPromotion } from '../reducers/game'
+import { fetchAndStore, pawnPromotion, socketEvents } from '../reducers/game'
 import { game } from '../reducers/game'
 import { WinModal } from './WinModal'
 import { PlayerJoinedModal } from './PlayerJoinedModal'
@@ -116,15 +116,19 @@ export const SetGame = () => {
   const playSound = useSelector((store) => store.game.playSound)
   const socket = useRef()
 
+  //OPEN SOCKET TO LISTEN ONLY TO EVENTS IN THIS NAMESPACE AND CLOSES WHEN GAME IS LEFT
   useEffect(() => {
     socket.current = io(`https://william-chess-board.herokuapp.com/${params.roomid}?id=${params.roomid}`)
-
     return () => {
       socket.current.close()
-
     }
   }, [params.roomid])
 
+  //SETS INITIAL BOARD STATE AND INITIALIZES SOCKET LISTENERS FOR FUTURE EVENTS
+  useEffect(() => {
+    dispatch(fetchAndStore(params.roomid, socket.current))
+    dispatch(socketEvents(socket.current))
+  }, [dispatch, params.roomid])
 
   useEffect(() => {
     if (playSound) {
@@ -146,10 +150,6 @@ export const SetGame = () => {
       setShowGuest(true)
     }
   }, [opponent.username, host.username, user.username])
-
-  useEffect(() => {
-    dispatch(fetchAndStore(params.roomid, socket.current))
-  }, [dispatch, params.roomid])
 
 
   const promotePawn = (piece) => {

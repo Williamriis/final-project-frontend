@@ -69,296 +69,6 @@ export const game = createSlice({
             state.currentTurn = currentTurn
         },
 
-        moveCalculator: (state, action) => {
-            const { baseSquare } = action.payload
-            state.activePiece = baseSquare
-            if (baseSquare.piece.type.includes('pawn') && baseSquare.piece.moved) {
-                if (baseSquare.piece.color === 'white') {
-                    state.squares.forEach((square) => {
-                        if ((baseSquare._id === square._id)) {
-                            square.valid = true;
-                        } else if ((square.column === baseSquare.column && square.row === baseSquare.row + 1 && square.piece && !square.piece.type) ||
-                            (square.column === baseSquare.column && square.row === baseSquare.row + 1 && !square.piece)) {
-                            square.valid = true
-                        } else if ((square.column === baseSquare.column + 1 || square.column === baseSquare.column - 1) &&
-                            square.row === baseSquare.row + 1 && square.piece &&
-                            square.piece.color && square.piece.color !== baseSquare.piece.color) {
-                            square.valid = true
-                        } else {
-                            square.valid = false;
-                        }
-                    })
-                } else {
-                    state.squares.forEach((square) => {
-                        if (baseSquare._id === square._id) {
-                            square.valid = true;
-                        } else if ((square.column === baseSquare.column && square.row === baseSquare.row - 1 && square.piece && !square.piece.type) ||
-                            (square.column === baseSquare.column && square.row === baseSquare.row - 1 && !square.piece)) {
-                            square.valid = true;
-                        } else if ((square.column === baseSquare.column + 1 || square.column === baseSquare.column - 1) &&
-                            square.row === baseSquare.row - 1 && square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
-                            square.valid = true;
-                        } else {
-                            square.valid = false;
-                        }
-
-                    })
-                }
-
-
-            } else if (baseSquare.piece.type.includes('pawn') && !baseSquare.piece.moved) {
-                if (baseSquare.piece.color === 'white') {
-                    let i = 1;
-                    for (i = 1; i <= 2; i++) {
-                        state.squares.forEach((square) => {
-                            if (baseSquare._id === square._id) {
-                                square.valid = true;
-                            } else if ((square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece) ||
-                                (square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece && !square.piece.color)) {
-                                square.valid = true;
-                            } else if (square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece) {
-                                i = 5;
-                            }
-                        })
-                    }
-                    state.squares.forEach((square) => {
-                        if ((square.column === baseSquare.column + 1 || square.column === baseSquare.column - 1) &&
-                            square.row === baseSquare.row + 1 &&
-                            square.piece && square.piece.type && square.piece.color !== baseSquare.piece.color) {
-                            square.valid = true;
-                        }
-
-                    })
-
-                } else if (baseSquare.piece.color === 'black') {
-                    let i = -1;
-                    for (i = -1; i >= -2; i--) {
-                        state.squares.forEach((square) => {
-                            if (baseSquare._id === square._id) {
-                                square.valid = true;
-                            } else if ((square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece && !square.piece.color) ||
-                                (square.column === baseSquare.column && square.row === baseSquare.row + i && !square.piece)) {
-                                square.valid = true;
-                            } else if (square.column === baseSquare.column && square.row === baseSquare.row + i && square.piece) {
-                                i = -10;
-                            }
-                        })
-                    }
-                    state.squares.forEach((square) => {
-                        if ((square.column === baseSquare.column + 1 || square.column === baseSquare.column - 1) &&
-                            square.row === baseSquare.row - 1 &&
-                            square.piece && square.piece.type && square.piece.color !== baseSquare.piece.color) {
-                            square.valid = true;
-                        }
-
-                    })
-                }
-
-            } else if (baseSquare.piece.type.includes('bishop')) {
-
-                const bishopMoves = [
-                    { x: 1, y: 1 },
-                    { x: 1, y: -1 },
-                    { x: -1, y: 1 },
-                    { x: -1, y: -1 }
-                ]
-                bishopMoves.forEach((dir) => {
-                    let scale = 1;
-                    for (scale = 1; scale <= 8; scale++) {
-                        let offset = { x: dir.x * scale, y: dir.y * scale }
-                        state.squares.forEach((square) => {
-                            if ((baseSquare._id === square._id) ||
-                                (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y)) {
-                                if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece &&
-                                    square.piece.color &&
-                                    square.piece.color !== baseSquare.piece.color) {
-                                    square.valid = true;
-                                    scale = 9;
-                                } else if ((square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && !square.piece) ||
-                                    (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && !square.piece.type) ||
-                                    baseSquare._id === square._id) {
-                                    square.valid = true;
-                                } else {
-                                    square.valid = false;
-                                    scale = 9;
-                                }
-                            }
-                        })
-                    }
-                })
-
-            } else if (baseSquare.piece.type.includes('rook')) {
-                const rookMoves = [
-                    { x: 0, y: 1 },
-                    { x: 0, y: -1 },
-                    { x: 1, y: 0 },
-                    { x: -1, y: 0 }
-                ]
-                rookMoves.forEach((dir) => {
-                    let scale = 1;
-                    for (scale = 1; scale <= 8; scale++) {
-                        const offset = { x: dir.x * scale, y: dir.y * scale }
-                        state.squares.forEach((square) => {
-                            if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x) ||
-                                (square.row === baseSquare.row && square.column === baseSquare.column + offset.y)) {
-                                if (square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
-                                    square.valid = true;
-                                    scale = 9;
-                                } else if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x && !square.piece) ||
-                                    (square.column === baseSquare.column && square.row === baseSquare.row + offset.x && square.piece && !square.piece.type) ||
-                                    (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && !square.piece) ||
-                                    (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && square.piece && !square.piece.type) ||
-                                    (baseSquare._id === square._id)) {
-                                    square.valid = true;
-                                } else {
-                                    square.valid = false;
-                                    scale = 9;
-                                }
-
-                            }
-                        })
-                    }
-                })
-
-            } else if (baseSquare.piece.type.includes('knight')) {
-                const knightMoves = [
-                    { x: 2, y: 1 },
-                    { x: -2, y: 1 },
-                    { x: 2, y: -1 },
-                    { x: -2, y: -1 },
-                    { x: 1, y: 2 },
-                    { x: 1, y: -2 },
-                    { x: -1, y: 2 },
-                    { x: -1, y: -2 }
-                ]
-
-                knightMoves.forEach((dir) => {
-                    let scale = 1;
-                    for (scale = 1; scale <= 1; scale++) {
-                        const offset = { x: dir.x * scale, y: dir.y * scale }
-                        state.squares.forEach((square) => {
-                            if (baseSquare._id === square._id) {
-                                square.valid = true;
-                            } else if ((square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y) &&
-                                (!square.piece || square.piece.color !== baseSquare.piece.color)) {
-                                square.valid = true;
-                                scale = 9;
-                            }
-                        })
-                    }
-                })
-            } else if (baseSquare.piece.type.includes('queen')) {
-
-                const queenMoves = [
-                    { x: 0, y: 1, type: "straight" },
-                    { x: 0, y: -1, type: "straight" },
-                    { x: 1, y: 0, type: "straight" },
-                    { x: -1, y: 0, type: "straight" },
-                    { x: 1, y: 1, type: "diagonal" },
-                    { x: 1, y: -1, type: "diagonal" },
-                    { x: -1, y: 1, type: "diagonal" },
-                    { x: -1, y: -1, type: "diagonal" }
-                ]
-                queenMoves.forEach((dir) => {
-                    let scale = 1;
-                    for (scale = 1; scale <= 8; scale++) {
-                        const offset = { x: dir.x * scale, y: dir.y * scale }
-                        if (dir.type === "straight") {
-
-                            state.squares.forEach((square) => {
-                                if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x) ||
-                                    (square.row === baseSquare.row && square.column === baseSquare.column + offset.y)) {
-                                    if (square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
-                                        square.valid = true;
-                                        scale = 9;
-                                    } else if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x && !square.piece) ||
-                                        (square.column === baseSquare.column && square.row === baseSquare.row + offset.x && square.piece && !square.piece.color) ||
-                                        (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && !square.piece) ||
-                                        (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && square.piece && !square.piece.color) ||
-                                        (baseSquare._id === square._id)) {
-                                        square.valid = true;
-                                    } else {
-                                        square.valid = false;
-                                        scale = 9;
-                                    }
-                                }
-                            })
-                        } else {
-                            state.squares.forEach((square) => {
-                                if ((baseSquare._id === square._id) ||
-                                    (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y)) {
-                                    if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && square.piece.color && square.piece.color !== baseSquare.piece.color) {
-                                        square.valid = true;
-                                        scale = 9;
-                                    } else if ((square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && !square.piece) ||
-                                        (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && !square.piece.color) ||
-                                        baseSquare._id === square._id) {
-                                        square.valid = true;
-                                    } else {
-                                        square.valid = false;
-                                        scale = 9;
-                                    }
-                                }
-                            })
-                        }
-                    }
-
-                })
-            } else if (baseSquare.piece.type.includes('king')) {
-                const kingMoves = [
-                    { x: 0, y: 1, type: "straight" },
-                    { x: 0, y: -1, type: "straight" },
-                    { x: 1, y: 0, type: "straight" },
-                    { x: -1, y: 0, type: "straight" },
-                    { x: 1, y: 1, type: "diagonal" },
-                    { x: 1, y: -1, type: "diagonal" },
-                    { x: -1, y: 1, type: "diagonal" },
-                    { x: -1, y: -1, type: "diagonal" }
-                ]
-                kingMoves.forEach((dir) => {
-                    let scale = 1;
-                    for (scale = 1; scale <= 1; scale++) {
-                        const offset = { x: dir.x * scale, y: dir.y * scale }
-                        if (dir.type === "straight") {
-                            state.squares.forEach((square) => {
-                                if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x) ||
-                                    (square.row === baseSquare.row && square.column === baseSquare.column + offset.y)) {
-                                    if (square.piece && square.piece.color !== baseSquare.piece.color && square.piece.type !== 'king') {
-                                        square.valid = true;
-                                        scale = 9;
-                                    } else if ((square.column === baseSquare.column && square.row === baseSquare.row + offset.x && !square.piece) ||
-                                        (square.row === baseSquare.row && square.column === baseSquare.column + offset.y && !square.piece) ||
-                                        (baseSquare._id === square._id)) {
-                                        square.valid = true;
-                                    } else {
-                                        square.valid = false;
-                                        scale = 9;
-                                    }
-                                }
-                            })
-                        } else {
-                            state.squares.forEach((square) => {
-                                if ((baseSquare._id === square._id) ||
-                                    (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y)) {
-                                    if (square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && square.piece && square.piece.color !== baseSquare.piece.color && square.piece.type !== 'king') {
-                                        square.valid = true;
-                                        scale = 9;
-                                    } else if ((square.row === baseSquare.row + offset.x && square.column === baseSquare.column + offset.y && !square.piece) ||
-                                        baseSquare._id === square._id) {
-                                        square.valid = true;
-                                    } else {
-                                        square.valid = false;
-                                        scale = 9;
-                                    }
-                                }
-                            })
-                        }
-                    }
-
-                })
-            }
-        },
-
         resetPiece: (state) => {
             state.activePiece = false
             state.squares.forEach((square) => {
@@ -372,14 +82,11 @@ export const game = createSlice({
             state.user.userId = userId;
             state.user.accessToken = accessToken
             state.user.color = color
-
-
         },
 
         setHost: (state, action) => {
             const { host } = action.payload
             state.host.username = host
-
         },
 
         errorHandler: (state, action) => {
@@ -407,11 +114,17 @@ export const game = createSlice({
 
         castleValidator: (state, action) => {
             const { piece } = action.payload
-            const blankSquaresLeft = state.squares.filter((square) => square.row === piece.row && square.column > 1 && square.column < 4 && !square.piece.type)
-            const blankSquaresRight = state.squares.filter((square) => square.row === piece.row && square.column > 4 && square.column < 8 && !square.piece.type)
+
+            const blankSquaresLeft = state.squares.filter((square) => square.row === piece.row &&
+                square.column > 1 && square.column < 4 && !square.piece.type)
+
+            const blankSquaresRight = state.squares.filter((square) => square.row === piece.row &&
+                square.column > 4 && square.column < 8 && !square.piece.type)
+
             if (piece.piece.color !== state.inCheck) {
                 state.squares.forEach((square) => {
-                    if (square.row === piece.row && square.piece.type && square.piece.type.includes('rook') && !square.piece.moved) {
+                    if (square.row === piece.row && square.piece.type && square.piece.type.includes('rook') &&
+                        !square.piece.moved) {
                         if (square.column === 1 && blankSquaresLeft.length === 2) {
                             square.valid = true;
                         } else if (square.column === 8 && blankSquaresRight.length === 3) {
@@ -425,12 +138,20 @@ export const game = createSlice({
             const { piece } = action.payload
             if (state.activePiece) {
                 if (state.lastMove.pieceMoved && state.lastMove.pieceMoved.type.includes('pawn')) {
-                    if (state.lastMove.movedFrom.row - state.lastMove.movedTo.row === 2 || state.lastMove.movedFrom.row - state.lastMove.movedTo.row === -2) {
-                        if (state.lastMove.movedTo.row === piece.row && (state.lastMove.movedTo.column === piece.column + 1 || state.lastMove.movedTo.column === piece.column - 1)) {
-                            const enPassantSquare = piece.piece.color === 'white' ? state.squares.find((square) => square.column === state.lastMove.movedFrom.column
-                                && (square.column === piece.column + 1 || square.column === piece.column - 1) && square.row === state.lastMove.movedFrom.row - 1)
+                    if (state.lastMove.movedFrom.row - state.lastMove.movedTo.row === 2 ||
+                        state.lastMove.movedFrom.row - state.lastMove.movedTo.row === -2) {
+                        if (state.lastMove.movedTo.row === piece.row &&
+                            (state.lastMove.movedTo.column === piece.column + 1 ||
+                                state.lastMove.movedTo.column === piece.column - 1)) {
+
+                            const enPassantSquare = piece.piece.color === 'white' ?
+                                state.squares.find((square) => square.column === state.lastMove.movedFrom.column
+                                    && (square.column === piece.column + 1 ||
+                                        square.column === piece.column - 1) &&
+                                    square.row === state.lastMove.movedFrom.row - 1)
                                 : state.squares.find((square) => square.column === state.lastMove.movedFrom.column &&
-                                    (square.column === piece.column + 1 || square.column === piece.column - 1) && square.row === state.lastMove.movedFrom.row + 1)
+                                    (square.column === piece.column + 1 || square.column === piece.column - 1) &&
+                                    square.row === state.lastMove.movedFrom.row + 1)
                             enPassantSquare.valid = true;
                         }
                     }
@@ -448,11 +169,11 @@ export const game = createSlice({
         promoteValidator: (state, action) => {
             const { promote, promotedPiece } = action.payload
             if (promotedPiece) {
-                state.lostPieces[promotedPiece.color] = state.lostPieces[promotedPiece.color].filter((piece) => piece.type !== promotedPiece.type)
+                state.lostPieces[promotedPiece.color] =
+                    state.lostPieces[promotedPiece.color].filter((piece) => piece.type !== promotedPiece.type)
                 state.promote = false
             } else {
                 state.promote = promote
-
             }
         },
         setWinner: (state, action) => {
@@ -461,7 +182,6 @@ export const game = createSlice({
                 state.winner = false
             } else {
                 state.winner = state.inCheck === 'white' ? 'black' : 'white'
-
             }
         },
         setOpponent: (state, action) => {
@@ -521,11 +241,13 @@ export const game = createSlice({
         },
         addMessage: (state, action) => {
             const { user, message } = action.payload
-            if (state.messages.length > 0 && state.messages[state.messages.length - 1].message === message && state.messages[state.messages.length - 1].user === user) {
+            //GUARDS AGAINST MULTIPLE SOCKET EMISSIONS - NOT AN IDEAL SOLUTION I KNOW
+            if (state.messages.length > 0 &&
+                state.messages[state.messages.length - 1].message === message &&
+                state.messages[state.messages.length - 1].user === user) {
 
             } else {
                 state.messages.push({ user, message })
-
             }
 
         },
@@ -535,11 +257,373 @@ export const game = createSlice({
                 square.valid = false
             })
 
+        },
+
+        findPawnMoves: (state, action) => {
+            const baseSquare = action.payload
+            state.activePiece = baseSquare
+            if (baseSquare.piece.moved) {
+                if (baseSquare.piece.color === 'white') {
+                    state.squares.forEach((square) => {
+                        if ((baseSquare._id === square._id)) {
+                            square.valid = true;
+                        } else if ((square.column === baseSquare.column &&
+                            square.row === baseSquare.row + 1 && square.piece && !square.piece.type) ||
+                            (square.column === baseSquare.column && square.row === baseSquare.row + 1 &&
+                                !square.piece)) {
+                            square.valid = true
+                        } else if ((square.column === baseSquare.column + 1 ||
+                            square.column === baseSquare.column - 1) &&
+                            square.row === baseSquare.row + 1 && square.piece &&
+                            square.piece.color && square.piece.color !== baseSquare.piece.color) {
+                            square.valid = true
+                        } else {
+                            square.valid = false;
+                        }
+                    })
+                } else {
+                    state.squares.forEach((square) => {
+                        if (baseSquare._id === square._id) {
+                            square.valid = true;
+                        } else if ((square.column === baseSquare.column &&
+                            square.row === baseSquare.row - 1 && square.piece &&
+                            !square.piece.type) ||
+                            (square.column === baseSquare.column && square.row === baseSquare.row - 1 &&
+                                !square.piece)) {
+                            square.valid = true;
+                        } else if ((square.column === baseSquare.column + 1 ||
+                            square.column === baseSquare.column - 1) &&
+                            square.row === baseSquare.row - 1 && square.piece &&
+                            square.piece.color && square.piece.color !== baseSquare.piece.color) {
+                            square.valid = true;
+                        } else {
+                            square.valid = false;
+                        }
+
+                    })
+                }
+
+            } else if (baseSquare.piece.type.includes('pawn') && !baseSquare.piece.moved) {
+                if (baseSquare.piece.color === 'white') {
+                    let i = 1;
+                    for (i = 1; i <= 2; i++) {
+                        state.squares.forEach((square) => {
+                            if (baseSquare._id === square._id) {
+                                square.valid = true;
+                            } else if ((square.column === baseSquare.column &&
+                                square.row === baseSquare.row + i && !square.piece) ||
+                                (square.column === baseSquare.column && square.row === baseSquare.row + i
+                                    && square.piece && !square.piece.color)) {
+                                square.valid = true;
+                            } else if (square.column === baseSquare.column && square.row === baseSquare.row + i
+                                && square.piece) {
+                                i = 5;
+                            }
+                        })
+                    }
+                    state.squares.forEach((square) => {
+                        if ((square.column === baseSquare.column + 1 ||
+                            square.column === baseSquare.column - 1) &&
+                            square.row === baseSquare.row + 1 &&
+                            square.piece && square.piece.type &&
+                            square.piece.color !== baseSquare.piece.color) {
+                            square.valid = true;
+                        }
+
+                    })
+
+                } else if (baseSquare.piece.color === 'black') {
+                    let i = -1;
+                    for (i = -1; i >= -2; i--) {
+                        state.squares.forEach((square) => {
+                            if (baseSquare._id === square._id) {
+                                square.valid = true;
+                            } else if ((square.column === baseSquare.column &&
+                                square.row === baseSquare.row + i && square.piece &&
+                                !square.piece.color) ||
+                                (square.column === baseSquare.column &&
+                                    square.row === baseSquare.row + i && !square.piece)) {
+                                square.valid = true;
+                            } else if (square.column === baseSquare.column &&
+                                square.row === baseSquare.row + i && square.piece) {
+                                i = -10;
+                            }
+                        })
+                    }
+                    state.squares.forEach((square) => {
+                        if ((square.column === baseSquare.column + 1 ||
+                            square.column === baseSquare.column - 1) &&
+                            square.row === baseSquare.row - 1 &&
+                            square.piece && square.piece.type &&
+                            square.piece.color !== baseSquare.piece.color) {
+                            square.valid = true;
+                        }
+
+                    })
+                }
+            }
+        },
+        findBishopMoves: (state, action) => {
+            const baseSquare = action.payload
+            state.activePiece = baseSquare
+            const bishopMoves = [
+                { x: 1, y: 1 },
+                { x: 1, y: -1 },
+                { x: -1, y: 1 },
+                { x: -1, y: -1 }
+            ]
+            bishopMoves.forEach((dir) => {
+                let scale = 1;
+                for (scale = 1; scale <= 8; scale++) {
+                    let offset = { x: dir.x * scale, y: dir.y * scale }
+                    state.squares.forEach((square) => {
+                        if ((baseSquare._id === square._id) ||
+                            (square.row === baseSquare.row + offset.x &&
+                                square.column === baseSquare.column + offset.y)) {
+                            if (square.row === baseSquare.row + offset.x &&
+                                square.column === baseSquare.column + offset.y && square.piece &&
+                                square.piece.color &&
+                                square.piece.color !== baseSquare.piece.color) {
+                                square.valid = true;
+                                scale = 9;
+                            } else if ((square.row === baseSquare.row + offset.x &&
+                                square.column === baseSquare.column + offset.y &&
+                                !square.piece) ||
+                                (square.row === baseSquare.row + offset.x &&
+                                    square.column === baseSquare.column + offset.y &&
+                                    !square.piece.type) ||
+                                baseSquare._id === square._id) {
+                                square.valid = true;
+                            } else {
+                                square.valid = false;
+                                scale = 9;
+                            }
+                        }
+                    })
+                }
+            })
+
+        },
+        findRookMoves: (state, action) => {
+            const baseSquare = action.payload
+            state.activePiece = baseSquare
+            const rookMoves = [
+                { x: 0, y: 1 },
+                { x: 0, y: -1 },
+                { x: 1, y: 0 },
+                { x: -1, y: 0 }
+            ]
+            rookMoves.forEach((dir) => {
+                let scale = 1;
+                for (scale = 1; scale <= 8; scale++) {
+                    const offset = { x: dir.x * scale, y: dir.y * scale }
+                    state.squares.forEach((square) => {
+                        if ((square.column === baseSquare.column &&
+                            square.row === baseSquare.row + offset.x) ||
+                            (square.row === baseSquare.row &&
+                                square.column === baseSquare.column + offset.y)) {
+                            if (square.piece && square.piece.color &&
+                                square.piece.color !== baseSquare.piece.color) {
+                                square.valid = true;
+                                scale = 9;
+                            } else if ((square.column === baseSquare.column &&
+                                square.row === baseSquare.row + offset.x && !square.piece) ||
+                                (square.column === baseSquare.column &&
+                                    square.row === baseSquare.row + offset.x &&
+                                    square.piece && !square.piece.type) ||
+                                (square.row === baseSquare.row &&
+                                    square.column === baseSquare.column + offset.y &&
+                                    !square.piece) ||
+                                (square.row === baseSquare.row &&
+                                    square.column === baseSquare.column + offset.y &&
+                                    square.piece && !square.piece.type) ||
+                                (baseSquare._id === square._id)) {
+                                square.valid = true;
+                            } else {
+                                square.valid = false;
+                                scale = 9;
+                            }
+
+                        }
+                    })
+                }
+            })
+        },
+        findKnightMoves: (state, action) => {
+            const baseSquare = action.payload
+            state.activePiece = baseSquare
+            const knightMoves = [
+                { x: 2, y: 1 },
+                { x: -2, y: 1 },
+                { x: 2, y: -1 },
+                { x: -2, y: -1 },
+                { x: 1, y: 2 },
+                { x: 1, y: -2 },
+                { x: -1, y: 2 },
+                { x: -1, y: -2 }
+            ]
+
+            knightMoves.forEach((dir) => {
+                let scale = 1;
+                for (scale = 1; scale <= 1; scale++) {
+                    const offset = { x: dir.x * scale, y: dir.y * scale }
+                    state.squares.forEach((square) => {
+                        if (baseSquare._id === square._id) {
+                            square.valid = true;
+                        } else if ((square.row === baseSquare.row + offset.x &&
+                            square.column === baseSquare.column + offset.y) &&
+                            (!square.piece || square.piece.color !== baseSquare.piece.color)) {
+                            square.valid = true;
+                            scale = 9;
+                        }
+                    })
+                }
+            })
+        },
+        findQueenMoves: (state, action) => {
+            const baseSquare = action.payload
+            state.activePiece = baseSquare
+            const queenMoves = [
+                { x: 0, y: 1, type: "straight" },
+                { x: 0, y: -1, type: "straight" },
+                { x: 1, y: 0, type: "straight" },
+                { x: -1, y: 0, type: "straight" },
+                { x: 1, y: 1, type: "diagonal" },
+                { x: 1, y: -1, type: "diagonal" },
+                { x: -1, y: 1, type: "diagonal" },
+                { x: -1, y: -1, type: "diagonal" }
+            ]
+            queenMoves.forEach((dir) => {
+                let scale = 1;
+                for (scale = 1; scale <= 8; scale++) {
+                    const offset = { x: dir.x * scale, y: dir.y * scale }
+                    if (dir.type === "straight") {
+
+                        state.squares.forEach((square) => {
+                            if ((square.column === baseSquare.column &&
+                                square.row === baseSquare.row + offset.x) ||
+                                (square.row === baseSquare.row &&
+                                    square.column === baseSquare.column + offset.y)) {
+                                if (square.piece && square.piece.color &&
+                                    square.piece.color !== baseSquare.piece.color) {
+                                    square.valid = true;
+                                    scale = 9;
+                                } else if ((square.column === baseSquare.column &&
+                                    square.row === baseSquare.row + offset.x &&
+                                    !square.piece) ||
+                                    (square.column === baseSquare.column &&
+                                        square.row === baseSquare.row + offset.x &&
+                                        square.piece && !square.piece.color) ||
+                                    (square.row === baseSquare.row &&
+                                        square.column === baseSquare.column + offset.y &&
+                                        !square.piece) ||
+                                    (square.row === baseSquare.row &&
+                                        square.column === baseSquare.column + offset.y &&
+                                        square.piece && !square.piece.color) ||
+                                    (baseSquare._id === square._id)) {
+                                    square.valid = true;
+                                } else {
+                                    square.valid = false;
+                                    scale = 9;
+                                }
+                            }
+                        })
+                    } else {
+                        state.squares.forEach((square) => {
+                            if ((baseSquare._id === square._id) ||
+                                (square.row === baseSquare.row + offset.x &&
+                                    square.column === baseSquare.column + offset.y)) {
+                                if (square.row === baseSquare.row + offset.x &&
+                                    square.column === baseSquare.column + offset.y &&
+                                    square.piece && square.piece.color &&
+                                    square.piece.color !== baseSquare.piece.color) {
+                                    square.valid = true;
+                                    scale = 9;
+                                } else if ((square.row === baseSquare.row + offset.x &&
+                                    square.column === baseSquare.column + offset.y && !square.piece) ||
+                                    (square.row === baseSquare.row + offset.x &&
+                                        square.column === baseSquare.column + offset.y &&
+                                        square.piece && !square.piece.color) ||
+                                    baseSquare._id === square._id) {
+                                    square.valid = true;
+                                } else {
+                                    square.valid = false;
+                                    scale = 9;
+                                }
+                            }
+                        })
+                    }
+                }
+
+            })
+        },
+        findKingMoves: (state, action) => {
+            const baseSquare = action.payload
+            state.activePiece = baseSquare
+            const kingMoves = [
+                { x: 0, y: 1, type: "straight" },
+                { x: 0, y: -1, type: "straight" },
+                { x: 1, y: 0, type: "straight" },
+                { x: -1, y: 0, type: "straight" },
+                { x: 1, y: 1, type: "diagonal" },
+                { x: 1, y: -1, type: "diagonal" },
+                { x: -1, y: 1, type: "diagonal" },
+                { x: -1, y: -1, type: "diagonal" }
+            ]
+            kingMoves.forEach((dir) => {
+                let scale = 1;
+                for (scale = 1; scale <= 1; scale++) {
+                    const offset = { x: dir.x * scale, y: dir.y * scale }
+                    if (dir.type === "straight") {
+                        state.squares.forEach((square) => {
+                            if ((square.column === baseSquare.column &&
+                                square.row === baseSquare.row + offset.x) ||
+                                (square.row === baseSquare.row &&
+                                    square.column === baseSquare.column + offset.y)) {
+                                if (square.piece && square.piece.color !== baseSquare.piece.color &&
+                                    square.piece.type !== 'king') {
+                                    square.valid = true;
+                                    scale = 9;
+                                } else if ((square.column === baseSquare.column &&
+                                    square.row === baseSquare.row + offset.x && !square.piece) ||
+                                    (square.row === baseSquare.row &&
+                                        square.column === baseSquare.column + offset.y && !square.piece) ||
+                                    (baseSquare._id === square._id)) {
+                                    square.valid = true;
+                                } else {
+                                    square.valid = false;
+                                    scale = 9;
+                                }
+                            }
+                        })
+                    } else {
+                        state.squares.forEach((square) => {
+                            if ((baseSquare._id === square._id) ||
+                                (square.row === baseSquare.row + offset.x &&
+                                    square.column === baseSquare.column + offset.y)) {
+                                if (square.row === baseSquare.row + offset.x &&
+                                    square.column === baseSquare.column + offset.y &&
+                                    square.piece && square.piece.color !== baseSquare.piece.color &&
+                                    square.piece.type !== 'king') {
+                                    square.valid = true;
+                                    scale = 9;
+                                } else if ((square.row === baseSquare.row + offset.x &&
+                                    square.column === baseSquare.column + offset.y && !square.piece) ||
+                                    baseSquare._id === square._id) {
+                                    square.valid = true;
+                                } else {
+                                    square.valid = false;
+                                    scale = 9;
+                                }
+                            }
+                        })
+                    }
+                }
+
+            })
         }
     }
 })
-
-
 
 export const fetchAndStore = (roomid, socket) => {
 
@@ -573,7 +657,6 @@ export const fetchAndStore = (roomid, socket) => {
                         })
                     )
                 }
-
             })
 
         socket.on('storeGuest', data => {
@@ -581,6 +664,189 @@ export const fetchAndStore = (roomid, socket) => {
             dispatch(game.actions.setOpponent({ username: data.username, color: data.color }))
 
         })
+    }
+}
+
+const checkPieceType = (baseSquare) => {
+    return (dispatch) => {
+        switch (baseSquare.piece.type) {
+            case 'pawnOne':
+            case 'pawnTwo':
+            case 'pawnThree':
+            case 'pawnFour':
+            case 'pawnFive':
+            case 'pawnSix':
+            case 'pawnSeven':
+            case 'pawnEight':
+                dispatch(game.actions.findPawnMoves(baseSquare))
+                break;
+            case 'rookOne':
+            case 'rookTwo':
+                dispatch(game.actions.findRookMoves(baseSquare))
+                break;
+            case 'knightOne':
+            case 'knightTwo':
+                dispatch(game.actions.findKnightMoves(baseSquare))
+                break;
+            case 'bishopOne':
+            case 'bishopTwo':
+                dispatch(game.actions.findBishopMoves(baseSquare))
+                break;
+            case 'queen':
+                dispatch(game.actions.findQueenMoves(baseSquare))
+                break;
+            case 'king':
+                dispatch(game.actions.findKingMoves(baseSquare))
+                break;
+            default:
+        }
+    }
+
+}
+
+export const setPiece = (baseSquare, targetSquare, roomid, socket) => {
+    return async (dispatch, getState) => {
+        const state = getState()
+        //CHECKS IF PIECE IS BEING SELECTED, UNSELECTED, OR MOVED TO NEW SQUARE
+
+        if (state.game.activePiece === false && baseSquare.piece) {
+            //PIECE SELECTED, FIND VALID MOVES
+            dispatch(checkPieceType(baseSquare))
+
+        } else if (state.game.activePiece && state.game.activePiece._id === targetSquare._id) {
+            //PIECE UNSELECTED
+            dispatch(game.actions.resetPiece())
+
+        } else if (state.game.activePiece) {
+            //PIECE BEING MOVED
+            //FIXES GLITCH CAUSED BY DOUBLE-CLICKING TARGET SQUARE BEFORE SOCKET EMITS 
+            dispatch(game.actions.makeValidFalse())
+
+            //CHECKS IF SPECIAL MOVE IS BEING MADE AND EMITS CORRESPONDING EVENT
+
+            if (state.game.activePiece.piece.type.includes('king') &&
+                targetSquare.piece &&
+                targetSquare.piece.type &&
+                targetSquare.piece.type.includes('rook') &&
+                targetSquare.piece.color === state.game.activePiece.piece.color) {
+
+                socket.emit('castle', {
+                    baseSquare: state.game.activePiece,
+                    targetSquare, color: state.game.currentTurn, roomid: roomid
+                })
+
+            } else if (state.game.activePiece.piece.type.includes('pawn') &&
+                (targetSquare.column === state.game.activePiece.column + 1 ||
+                    targetSquare.column === state.game.activePiece.column - 1) &&
+                ((targetSquare.piece && !targetSquare.piece.type) || !targetSquare.piece)) {
+
+                socket.emit('enPassant', {
+                    oldSquare: state.game.activePiece,
+                    targetSquare, color: state.game.currentTurn, roomid
+                })
+
+            } else if (state.game.activePiece.piece.type.includes('pawn') &&
+                ((state.game.activePiece.piece.color === "white" && targetSquare.row === 8 &&
+                    state.game.lostPieces.white.length > 0)
+                    || (state.game.activePiece.piece.color === "black" && targetSquare.row === 1 &&
+                        state.game.lostPieces.black.length > 0))) {
+
+                socket.emit('movePiece', {
+                    baseSquare: state.game.activePiece,
+                    targetSquare, color: state.game.currentTurn, roomid: roomid, promote: true
+                })
+
+            } else {
+                socket.emit('movePiece', {
+                    baseSquare: state.game.activePiece,
+                    targetSquare, color: state.game.currentTurn, roomid: roomid,
+                    check: state.game.inCheck === state.game.activePiece.piece.color ? true : false
+                })
+            }
+
+            socket.on('check', data => {
+                dispatch(game.actions.setCheck({ check: data }))
+            })
+
+            socket.on('winner', data => {
+                dispatch(game.actions.setWinner())
+            })
+
+        }
+    }
+}
+
+
+export const UserSignUp = (username, email, password) => {
+    return (dispatch) => {
+        fetch('https://william-chess-board.herokuapp.com/signup', {
+            method: 'POST',
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ username: username, email: email, password: password })
+        })
+            .then((res) => res.json())
+            .then((json) => {
+                if (json.error) {
+                    dispatch(game.actions.errorHandler({ error: json.error }))
+                } else {
+                    dispatch(
+                        game.actions.storeUser({
+                            accessToken: json.accessToken,
+                            userId: json.id, username: json.username
+                        })
+                    )
+                    dispatch(game.actions.errorHandler({ error: false }))
+                }
+            })
+    }
+}
+export const UserLogin = (email, password) => {
+    return (dispatch) => {
+        fetch('https://william-chess-board.herokuapp.com/sessions', {
+            method: 'POST',
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email: email, password: password })
+        })
+            .then((res) => res.json())
+            .then((json) => {
+                if (json.error) {
+                    dispatch(game.actions.errorHandler({ error: json.error }))
+                } else {
+                    dispatch(
+                        game.actions.storeUser({
+                            accessToken: json.accessToken,
+                            userId: json.userId, username: json.username
+                        })
+                    )
+                    dispatch(game.actions.errorHandler({ error: false }))
+                }
+            })
+    }
+}
+
+export const resetGame = (roomid, socket) => {
+    return (dispatch, getState) => {
+        dispatch(game.actions.setWinner({ winner: 'false' }))
+        socket.emit('reset', roomid)
+
+    }
+
+}
+export const pawnPromotion = (piece, roomid, socket) => {
+    return (dispatch, getState) => {
+        const state = getState()
+        socket.emit('pawnPromotion', {
+            piece, targetSquare: state.game.lastMove.movedTo,
+            roomid, color: state.game.currentTurn
+        })
+    }
+
+}
+
+export const socketEvents = (socket) => {
+
+    return (dispatch) => {
+
         socket.on('update', data => {
             if (data.takenPiece) {
                 dispatch(game.actions.takenPiece({ takenPiece: data.takenPiece }))
@@ -614,97 +880,4 @@ export const fetchAndStore = (roomid, socket) => {
             dispatch(game.actions.addMessage({ message: data.message, user: data.user }))
         })
     }
-}
-
-export const setPiece = (baseSquare, targetSquare, roomid, socket) => {
-    return async (dispatch, getState) => {
-        const state = getState()
-        if (state.game.activePiece === false && baseSquare.piece) {
-            dispatch(game.actions.moveCalculator({ baseSquare }))
-        } else if (state.game.activePiece && state.game.activePiece._id === targetSquare._id) {
-            dispatch(game.actions.resetPiece())
-        } else if (state.game.activePiece) {
-
-            //FIXES GLITCH CAUSED BY DOUBLE-CLICKING TARGET SQUARE BEFORE SOCKET EMITS 
-            dispatch(game.actions.makeValidFalse())
-
-            if (state.game.activePiece.piece.type.includes('king') && targetSquare.piece && targetSquare.piece.type && targetSquare.piece.type.includes('rook') && targetSquare.piece.color === state.game.activePiece.piece.color) {
-                socket.emit('castle', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid })
-            } else if (state.game.activePiece.piece.type.includes('pawn') && (targetSquare.column === state.game.activePiece.column + 1 || targetSquare.column === state.game.activePiece.column - 1) && ((targetSquare.piece && !targetSquare.piece.type) || !targetSquare.piece)) {
-                socket.emit('enPassant', { oldSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid })
-            } else if (state.game.activePiece.piece.type.includes('pawn') && ((state.game.activePiece.piece.color === "white" && targetSquare.row === 8 && state.game.lostPieces.white.length > 0)
-                || (state.game.activePiece.piece.color === "black" && targetSquare.row === 1 && state.game.lostPieces.black.length > 0))) {
-                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, promote: true })
-            } else {
-                socket.emit('movePiece', { baseSquare: state.game.activePiece, targetSquare, color: state.game.currentTurn, roomid: roomid, check: state.game.inCheck === state.game.activePiece.piece.color ? true : false })
-            }
-
-            socket.on('check', data => {
-                dispatch(game.actions.setCheck({ check: data }))
-            })
-
-            socket.on('winner', data => {
-                dispatch(game.actions.setWinner())
-            })
-
-        }
-    }
-}
-
-
-export const UserSignUp = (username, email, password) => {
-    return (dispatch) => {
-        fetch('https://william-chess-board.herokuapp.com/signup', {
-            method: 'POST',
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ username: username, email: email, password: password })
-        })
-            .then((res) => res.json())
-            .then((json) => {
-                if (json.error) {
-                    dispatch(game.actions.errorHandler({ error: json.error }))
-                } else {
-                    dispatch(
-                        game.actions.storeUser({ accessToken: json.accessToken, userId: json.id, username: json.username })
-                    )
-                    dispatch(game.actions.errorHandler({ error: false }))
-                }
-            })
-    }
-}
-export const UserLogin = (email, password) => {
-    return (dispatch) => {
-        fetch('https://william-chess-board.herokuapp.com/sessions', {
-            method: 'POST',
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ email: email, password: password })
-        })
-            .then((res) => res.json())
-            .then((json) => {
-                if (json.error) {
-                    dispatch(game.actions.errorHandler({ error: json.error }))
-                } else {
-                    dispatch(
-                        game.actions.storeUser({ accessToken: json.accessToken, userId: json.userId, username: json.username })
-                    )
-                    dispatch(game.actions.errorHandler({ error: false }))
-                }
-            })
-    }
-}
-
-export const resetGame = (roomid, socket) => {
-    return (dispatch, getState) => {
-        dispatch(game.actions.setWinner({ winner: 'false' }))
-        socket.emit('reset', roomid)
-
-    }
-
-}
-export const pawnPromotion = (piece, roomid, socket) => {
-    return (dispatch, getState) => {
-        const state = getState()
-        socket.emit('pawnPromotion', { piece, targetSquare: state.game.lastMove.movedTo, roomid, color: state.game.currentTurn })
-    }
-
 }
