@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import styled, { keyframes } from 'styled-components'
 
 
@@ -103,7 +103,13 @@ export const FormRocket = ({ inputOne, inputTwo, inputThree, rocketGoal }) => {
         }
 
     }
-    window.onresize = () => stationRocket()
+
+    useLayoutEffect(() => {
+
+        window.addEventListener('resize', stationRocket);
+
+        return () => window.removeEventListener('resize', stationRocket);
+    }, []);
     return (
         <Rocket
             role="img"
